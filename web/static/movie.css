@@ -91,23 +91,76 @@ body {
     background-color: #0056b3;
 }
 
-.trending, .popular {
-    width: 90%;
-    max-width: 1400px;
+.movie-detail {
+    display: flex;
+    gap: 30px;
+    padding: 20px;
+    max-width: 1200px;
     margin: 20px auto;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.trending h2, .popular h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
+.movie-poster img {
+    width: 300px;
+    border-radius: 12px;
+}
+
+.movie-info {
+    flex: 1;
+}
+
+.movie-info h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: #333333;
+}
+
+.movie-release-date {
+    font-size: 18px;
+    color: #666666;
+    margin-bottom: 10px;
+}
+
+.movie-genres {
+    font-size: 16px;
     color: #007bff;
+    margin-bottom: 10px;
 }
 
-.time-window {
+.movie-runtime {
+    font-size: 16px;
+    color: #666666;
+    margin-bottom: 10px;
+}
+
+.movie-rating {
+    font-size: 24px;
+    color: #007bff;
     margin-bottom: 20px;
 }
 
-.time-window button {
+.movie-tagline {
+    font-size: 18px;
+    color: #666666;
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
+.movie-overview {
+    font-size: 16px;
+    color: #333333;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.movie-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.movie-actions button {
     background-color: #007bff;
     border: none;
     padding: 10px 20px;
@@ -116,11 +169,67 @@ body {
     cursor: pointer;
     font-size: 14px;
     transition: background 0.3s;
-    margin-right: 10px;
 }
 
-.time-window button:hover {
+.movie-actions button:hover {
     background-color: #0056b3;
+}
+
+.movie-cast {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.movie-cast h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #007bff;
+}
+
+.cast-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.cast-member {
+    text-align: center;
+}
+
+.cast-member img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.cast-member h3 {
+    font-size: 16px;
+    color: #333333;
+    margin-bottom: 5px;
+}
+
+.cast-member p {
+    font-size: 14px;
+    color: #666666;
+}
+
+.similar-movies {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.similar-movies h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #007bff;
 }
 
 .swiper-container {
@@ -182,14 +291,4 @@ body {
 
 .swiper-button-next, .swiper-button-prev {
     color: #007bff;
-}
-
-.movie-link {
-    text-decoration: none; /* Убираем подчеркивание у ссылок */
-    color: inherit; /* Наследуем цвет текста */
-    display: block; /* Делаем ссылку блочным элементом */
-}
-
-.movie-link:hover {
-    text-decoration: none; /* Убираем подчеркивание при наведении */
 }

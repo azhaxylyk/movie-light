@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tanymal filmder</title>
+    <title>Movie Light</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Подключение Swiper CSS -->
@@ -35,14 +35,16 @@
             <div class="swiper-wrapper">
                 {{ range .TrendingMovies }}
                 <div class="swiper-slide">
-                    <div class="movie">
-                        <img src="https://image.tmdb.org/t/p/w500{{ .PosterPath }}" alt="{{ .Title }}">
-                        <h2>{{ .Title }}</h2>
-                        <div class="movie-details">
-                            <span class="movie-release-date">{{ .ReleaseDate }}</span>
-                            <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} votes)</span>
+                    <a href="/movie/{{ .ID }}" class="movie-link">
+                        <div class="movie">
+                            <img src="https://image.tmdb.org/t/p/w500{{ .PosterPath }}" alt="{{ .Title }}">
+                            <h2>{{ .Title }}</h2>
+                            <div class="movie-details">
+                                <span class="movie-release-date">{{ .ReleaseDate }}</span>
+                                <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} votes)</span>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 {{ else }}
                 <p>Trending filmder tabylgan jok.</p>
@@ -61,14 +63,16 @@
             <div class="swiper-wrapper">
                 {{ range .Movies }}
                 <div class="swiper-slide">
-                    <div class="movie">
-                        <img src="https://image.tmdb.org/t/p/w500{{ .PosterPath }}" alt="{{ .Title }}">
-                        <h2>{{ .Title }}</h2>
-                        <div class="movie-details">
-                            <span class="movie-release-date">{{ .ReleaseDate }}</span>
-                            <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} votes)</span>
+                    <a href="/movie/{{ .ID }}" class="movie-link">
+                        <div class="movie">
+                            <img src="https://image.tmdb.org/t/p/w500{{ .PosterPath }}" alt="{{ .Title }}">
+                            <h2>{{ .Title }}</h2>
+                            <div class="movie-details">
+                                <span class="movie-release-date">{{ .ReleaseDate }}</span>
+                                <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} votes)</span>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 {{ else }}
                 <p>Filmder tabylgan jok.</p>
@@ -139,14 +143,16 @@
                     const trendingContent = document.querySelector('.trending .swiper-wrapper');
                     trendingContent.innerHTML = data.map(movie => `
                         <div class="swiper-slide">
-                            <div class="movie">
-                                <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
-                                <h2>${movie.title}</h2>
-                                <div class="movie-details">
-                                    <span class="movie-release-date">${movie.release_date}</span>
-                                    <span class="movie-rating">⭐ ${movie.vote_average} (${movie.vote_count} votes)</span>
+                            <a href="/movie/${movie.id}" class="movie-link">
+                                <div class="movie">
+                                    <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
+                                    <h2>${movie.title}</h2>
+                                    <div class="movie-details">
+                                        <span class="movie-release-date">${movie.release_date}</span>
+                                        <span class="movie-rating">⭐ ${movie.vote_average} (${movie.vote_count} votes)</span>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     `).join('');
                     trendingSwiper.update(); // Обновление Swiper после загрузки данных

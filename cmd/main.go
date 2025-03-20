@@ -23,5 +23,6 @@ func main() {
 	r.LoadHTMLGlob("web/templates/*")
 	r.Static("/static", "web/static")
 	r.GET("/", handlers.HomePage)
+	r.GET("/movie/:id", handlers.MovieDetailPage)
 	r.Run(":8080")
 }
