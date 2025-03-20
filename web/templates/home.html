@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Танымал фильмдер</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Movie Light</h1>
+        <div class="buttons">
+            <button>Кіру</button>
+            <button>Тіркелу</button>
+        </div>
+    </div>
+    
+    <div class="forum-container">
+        <div class="sidebar">
+            <h2>Сүзгілер</h2>
+            <ul>
+                <li><a href="#">Жанр</a></li>
+                <li><a href="#">Шығарылған жыл</a></li>
+                <li><a href="#">Рейтинг</a></li>
+                <li><a href="#">Ел</a></li>
+                <li><a href="#">Тіл</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <div class="movies">
+                {{ range .Movies }}
+                <div class="movie">
+                    <img src="https://image.tmdb.org/t/p/w500{{ .PosterPath }}" alt="{{ .Title }}">
+                    <h2>{{ .Title }}</h2>
+                </div>
+                {{ else }}
+                <p>Фильмдер табылған жоқ.</p>
+                {{ end }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

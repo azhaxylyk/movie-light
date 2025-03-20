@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/register.css">
+    <title>Forum - Registration</title>
+</head>
+<body>
+    <div class="register-container">
+        <h1>Register</h1>
+        
+        {{if .Error}}
+            <p class="error-message">{{.Error}}</p>
+        {{end}}
+
+        <form action="/register" method="post" class="register-form">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+            
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+            
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Register</button>
+        </form>
+
+        <div class="oauth-buttons">
+            <a href="/auth/google" id="google-login" class="google-login">Login with Google</a>
+            <a href="/auth/github" id="github-login" class="github-login">Login with GitHub</a>
+        </div>               
+        <p class="login-link">Already registered? <a href="/login">Sign in</a></p>
+
+        <div class="back-button">
+            <button onclick="window.history.back();">Back</button>
+        </div>
+    </div>
+</body>
+</html>
