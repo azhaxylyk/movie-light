@@ -3,41 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Танымал фильмдер</title>
+    <title>Tanymal filmder</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Подключение Swiper CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
 </head>
 <body>
     <div class="header">
-        <h1>Movie Light</h1>
-        <div class="buttons">
-            <button>Кіру</button>
-            <button>Тіркелу</button>
-        </div>
-    </div>
-    
-    <div class="forum-container">
-        <div class="sidebar">
-            <h2>Сүзгілер</h2>
-            <ul>
-                <li><a href="#">Жанр</a></li>
-                <li><a href="#">Шығарылған жыл</a></li>
-                <li><a href="#">Рейтинг</a></li>
-                <li><a href="#">Ел</a></li>
-                <li><a href="#">Тіл</a></li>
-            </ul>
-        </div>
-        <div class="main-content">
-            <div class="movies">
-                {{ range .Movies }}
-                <div class="movie">
-                    <img src="https://image.tmdb.org/t/p/w500{{ .PosterPath }}" alt="{{ .Title }}">
-                    <h2>{{ .Title }}</h2>
-                </div>
-                {{ else }}
-                <p>Фильмдер табылған жоқ.</p>
-                {{ end }}
+        <div class="header-container">
+            <h1>Movie Light</h1>
+            <div class="search-bar">
+                <input type="text" placeholder="Film izdeu">
+                <button>Izdep kөru</button>
+            </div>
+            <div class="buttons">
+                <button>Kiru</button>
+                <button>Tirkelu</button>
             </div>
         </div>
     </div>
+
+    <div class="trending">
+        <h2>Trending</h2>
+        <div class="time-window">
+            <button onclick="loadTrending('day')">Kүn</button>
+            <button onclick="loadTrending('week')">Apta</button>
+        </div>
+        <!-- Карусель для трендовых фильмов -->
+        <div class="swiper-container">
+            <div class="swiper-wrapper">
+                {{ range .TrendingMovies }}
+                <div class="swiper-slide">
+                    <div class="movie">
+                        <img src="https://image.tmdb.org/t/p/w500{{ .PosterPath }}" alt="{{ .Title }}">
+                        <h2>{{ .Title }}</h2>
+                        <div class="movie-details">
+                            <span class="movie-release-date">{{ .ReleaseDate }}</span>
+                            <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} votes)</span>
+                        </div>
+                    </div>
+                </div>
+                {{ else }}
+                <p>Trending filmder tabylgan jok.</p>
+                {{ end }}
+            </div>
+            <!-- Добавление навигационных кнопок -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    </div>
+
+    <div class="popular">
+        <h2>What's Popular</h2>
+        <!-- Карусель для популярных фильмов -->
+        <div class="swiper-container">
+            <div class="swiper-wrapper">
+                {{ range .Movies }}
+                <div class="swiper-slide">
+                    <div class="movie">
+                        <img src="https://image.tmdb.org/t/p/w500{{ .PosterPath }}" alt="{{ .Title }}">
+                        <h2>{{ .Title }}</h2>
+                        <div class="movie-details">
+                            <span class="movie-release-date">{{ .ReleaseDate }}</span>
+                            <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} votes)</span>
+                        </div>
+                    </div>
+                </div>
+                {{ else }}
+                <p>Filmder tabylgan jok.</p>
+                {{ end }}
+            </div>
+            <!-- Добавление навигационных кнопок -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    </div>
+
+    <!-- Подключение Swiper JS -->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script>
+        // Инициализация Swiper для трендовых фильмов
+        const trendingSwiper = new Swiper('.trending .swiper-container', {
+            slidesPerView: 4,
+            spaceBetween: 20,
+            navigation: {
+                nextEl: '.trending .swiper-button-next',
+                prevEl: '.trending .swiper-button-prev',
+            },
+            breakpoints: {
+                320: {
+                    slidesPerView: 1,
+                },
+                768: {
+                    slidesPerView: 2,
+                },
+                1024: {
+                    slidesPerView: 3,
+                },
+                1440: {
+                    slidesPerView: 4,
+                }
+            }
+        });
+
+        // Инициализация Swiper для популярных фильмов
+        const popularSwiper = new Swiper('.popular .swiper-container', {
+            slidesPerView: 4,
+            spaceBetween: 20,
+            navigation: {
+                nextEl: '.popular .swiper-button-next',
+                prevEl: '.popular .swiper-button-prev',
+            },
+            breakpoints: {
+                320: {
+                    slidesPerView: 1,
+                },
+                768: {
+                    slidesPerView: 2,
+                },
+                1024: {
+                    slidesPerView: 3,
+                },
+                1440: {
+                    slidesPerView: 4,
+                }
+            }
+        });
+
+        // Функция для загрузки трендовых фильмов
+        function loadTrending(timeWindow) {
+            fetch(`/trending?timeWindow=${timeWindow}`)
+                .then(response => response.json())
+                .then(data => {
+                    const trendingContent = document.querySelector('.trending .swiper-wrapper');
+                    trendingContent.innerHTML = data.map(movie => `
+                        <div class="swiper-slide">
+                            <div class="movie">
+                                <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
+                                <h2>${movie.title}</h2>
+                                <div class="movie-details">
+                                    <span class="movie-release-date">${movie.release_date}</span>
+                                    <span class="movie-rating">⭐ ${movie.vote_average} (${movie.vote_count} votes)</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    trendingSwiper.update(); // Обновление Swiper после загрузки данных
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
 </body>
 </html>
