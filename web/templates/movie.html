@@ -6,30 +6,35 @@
     <title>{{ .Movie.Title }} - Movie Light</title>
     <link rel="stylesheet" href="/static/movie.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
 </head>
 <body>
-    <div class="header">
+    <header class="header">
         <div class="header-container">
             <h1>Movie Light</h1>
             <div class="search-bar">
-                <input type="text" placeholder="Film izdeu">
-                <button>Izdep kөru</button>
+                <input type="text" placeholder="Фильм іздеу">
+                <button>Іздеу</button>
             </div>
             <div class="buttons">
-                <button>Kiru</button>
-                <button>Tirkelu</button>
+                <button>Кіру</button>
+                <button>Тіркелу</button>
             </div>
         </div>
-    </div>
+    </header>
 
-    <div class="movie-detail">
+    <main class="movie-detail">
         <div class="movie-poster">
             <img src="https://image.tmdb.org/t/p/w500{{ .Movie.PosterPath }}" alt="{{ .Movie.Title }}">
         </div>
         <div class="movie-info">
             <h1>{{ .Movie.Title }}</h1>
             <p class="movie-release-date">{{ .Movie.ReleaseDate }} ({{ .Movie.OriginalLanguage }})</p>
-            <p class="movie-genres">{{ .Movie.Genres }}</p>
+            <p class="movie-genres">
+                {{ range .Movie.Genres }}
+                    {{ .Name }}
+                {{ end }}
+            </p>
             <p class="movie-runtime">{{ .Movie.Runtime }} минут</p>
             <div class="movie-rating">
                 <span class="rating-value">⭐ {{ .Movie.VoteAverage }}</span>
@@ -42,22 +47,26 @@
                 <button>Ұнады</button>
             </div>
         </div>
-    </div>
+    </main>
 
-    <div class="movie-cast">
+    <section class="movie-cast">
         <h2>Актерлер құрамы</h2>
-        <div class="cast-list">
-            {{ range .Movie.Credits.Cast }}
-            <div class="cast-member">
-                <img src="https://image.tmdb.org/t/p/w200{{ .ProfilePath }}" alt="{{ .Name }}">
-                <h3>{{ .Name }}</h3>
-                <p>{{ .Character }}</p>
+        <div class="swiper-container cast-swiper">
+            <div class="swiper-wrapper">
+                {{ range .Movie.Credits.Cast }}
+                <div class="swiper-slide cast-member">
+                    <img src="{{ if .ProfilePath }}https://image.tmdb.org/t/p/w200{{ .ProfilePath }}{{ else }}/static/default-actor.jpg{{ end }}" alt="{{ .Name }}">
+                    <h3>{{ .Name }}</h3>
+                    <p>{{ .Character }}</p>
+                </div>
+                {{ end }}
             </div>
-            {{ end }}
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
         </div>
-    </div>
+    </section>
 
-    <div class="similar-movies">
+    <section class="similar-movies">
         <h2>Ұқсас фильмдер</h2>
         <div class="swiper-container">
             <div class="swiper-wrapper">
@@ -76,37 +85,42 @@
                 <p>Ұқсас фильмдер табылмады.</p>
                 {{ end }}
             </div>
-            <!-- Добавление навигационных кнопок -->
             <div class="swiper-button-next"></div>
             <div class="swiper-button-prev"></div>
         </div>
-    </div>
+    </section>
 
-    <!-- Подключение Swiper JS -->
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script>
-        // Инициализация Swiper для похожих фильмов
-        const similarSwiper = new Swiper('.similar-movies .swiper-container', {
-            slidesPerView: 4,
-            spaceBetween: 20,
-            navigation: {
-                nextEl: '.similar-movies .swiper-button-next',
-                prevEl: '.similar-movies .swiper-button-prev',
-            },
-            breakpoints: {
-                320: {
-                    slidesPerView: 1,
+        document.addEventListener("DOMContentLoaded", function() {
+            new Swiper('.cast-swiper', {
+                slidesPerView: 5,
+                spaceBetween: 10,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
                 },
-                768: {
-                    slidesPerView: 2,
-                },
-                1024: {
-                    slidesPerView: 3,
-                },
-                1440: {
-                    slidesPerView: 4,
+                breakpoints: {
+                    320: { slidesPerView: 2 },
+                    768: { slidesPerView: 3 },
+                    1024: { slidesPerView: 4 },
+                    1440: { slidesPerView: 5 }
                 }
-            }
+            });
+
+            new Swiper('.similar-movies .swiper-container', {
+                slidesPerView: 4,
+                spaceBetween: 10,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                breakpoints: {
+                    320: { slidesPerView: 2 },
+                    768: { slidesPerView: 3 },
+                    1024: { slidesPerView: 4 }
+                }
+            });
         });
     </script>
 </body>
