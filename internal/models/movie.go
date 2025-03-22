@@ -58,7 +58,7 @@ func GetMovieDetails(movieID string) (*MovieDetail, error) {
 	}
 
 	// Запрос к API TMDB для получения данных о фильме
-	url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%s?api_key=%s&language=kk&append_to_response=credits", movieID, apiKey)
+	url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%s?api_key=%s&language=ru&append_to_response=credits", movieID, apiKey)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -75,6 +75,7 @@ func GetMovieDetails(movieID string) (*MovieDetail, error) {
 		return nil, err
 	}
 
+	fmt.Println("Переведенные данные:", movie)
 	return &movie, nil
 }
 
@@ -86,7 +87,7 @@ func GetSimilarMovies(movieID string) ([]Movie, error) {
 	}
 
 	// Запрос к API TMDB для получения похожих фильмов
-	url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%s/similar?api_key=%s&language=kk", movieID, apiKey)
+	url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%s/similar?api_key=%s&language=ru", movieID, apiKey)
 
 	resp, err := http.Get(url)
 	if err != nil {

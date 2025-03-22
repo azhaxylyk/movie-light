@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"movie-light/internal/models"
 	"net/http"
@@ -15,7 +14,6 @@ func MovieDetailPage(c *gin.Context) {
 
 	// Получаем подробную информацию о фильме
 	movie, err := models.GetMovieDetails(movieID)
-	fmt.Println(movie)
 	if err != nil {
 		log.Println("Ошибка получения данных о фильме:", err)
 		c.HTML(http.StatusInternalServerError, "error.html", gin.H{"error": "Ошибка получения данных о фильме"})

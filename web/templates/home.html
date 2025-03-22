@@ -6,7 +6,6 @@
     <title>Movie Light</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Подключение Swiper CSS -->
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
 </head>
 <body>
@@ -14,23 +13,33 @@
         <div class="header-container">
             <h1>Movie Light</h1>
             <div class="search-bar">
-                <input type="text" placeholder="Film izdeu">
-                <button>Izdep kөru</button>
+                <input type="text" placeholder="Кино іздеу">
+                <button>Іздеу</button>
             </div>
             <div class="buttons">
-                <button>Kiru</button>
-                <button>Tirkelu</button>
+                <a href="/login" class="button">Кіру</a>
+                <a href="/register class="button">Тіркелу</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1>Movie Light Қош келдіңіз</h1>
+            <p>Миллиондаған кинолар, сіз үшін! длаьлпь взщалызщклп щфлащлухщ</p>
+            <div class="search-bar">
+                <input type="text" placeholder="Search for a movie, tv show, person...">
+                <button>Search</button>
             </div>
         </div>
     </div>
 
     <div class="trending">
-        <h2>Trending</h2>
+        <h2>Соңғы трендтер</h2>
         <div class="time-window">
-            <button onclick="loadTrending('day')">Kүn</button>
-            <button onclick="loadTrending('week')">Apta</button>
+            <button onclick="loadTrending('day')">Бүгінгі</button>
+            <button onclick="loadTrending('week')">Апталық</button>
         </div>
-        <!-- Карусель для трендовых фильмов -->
         <div class="swiper-container">
             <div class="swiper-wrapper">
                 {{ range .TrendingMovies }}
@@ -41,7 +50,7 @@
                             <h2>{{ .Title }}</h2>
                             <div class="movie-details">
                                 <span class="movie-release-date">{{ .ReleaseDate }}</span>
-                                <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} votes)</span>
+                                <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} дауыс)</span>
                             </div>
                         </div>
                     </a>
@@ -50,15 +59,13 @@
                 <p>Trending filmder tabylgan jok.</p>
                 {{ end }}
             </div>
-            <!-- Добавление навигационных кнопок -->
             <div class="swiper-button-next"></div>
             <div class="swiper-button-prev"></div>
         </div>
     </div>
 
     <div class="popular">
-        <h2>What's Popular</h2>
-        <!-- Карусель для популярных фильмов -->
+        <h2>Танымал</h2>
         <div class="swiper-container">
             <div class="swiper-wrapper">
                 {{ range .Movies }}
@@ -69,7 +76,7 @@
                             <h2>{{ .Title }}</h2>
                             <div class="movie-details">
                                 <span class="movie-release-date">{{ .ReleaseDate }}</span>
-                                <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} votes)</span>
+                                <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} дауыс)</span>
                             </div>
                         </div>
                     </a>
@@ -78,16 +85,23 @@
                 <p>Filmder tabylgan jok.</p>
                 {{ end }}
             </div>
-            <!-- Добавление навигационных кнопок -->
             <div class="swiper-button-next"></div>
             <div class="swiper-button-prev"></div>
         </div>
     </div>
 
-    <!-- Подключение Swiper JS -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Автор: Aknur Z.</p>
+            <p>
+                <a href="https://www.linkedin.com/in/azhaxylyk" target="_blank">LinkedIn: azhaxylyk</a> | 
+                <a href="https://github.com/azhaxylyk" target="_blank">GitHub: azhaxylyk</a>
+            </p>
+        </div>
+    </footer>
+
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script>
-        // Инициализация Swiper для трендовых фильмов
         const trendingSwiper = new Swiper('.trending .swiper-container', {
             slidesPerView: 4,
             spaceBetween: 20,
@@ -96,22 +110,13 @@
                 prevEl: '.trending .swiper-button-prev',
             },
             breakpoints: {
-                320: {
-                    slidesPerView: 1,
-                },
-                768: {
-                    slidesPerView: 2,
-                },
-                1024: {
-                    slidesPerView: 3,
-                },
-                1440: {
-                    slidesPerView: 4,
-                }
+                320: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+                1440: { slidesPerView: 4 }
             }
         });
 
-        // Инициализация Swiper для популярных фильмов
         const popularSwiper = new Swiper('.popular .swiper-container', {
             slidesPerView: 4,
             spaceBetween: 20,
@@ -120,22 +125,13 @@
                 prevEl: '.popular .swiper-button-prev',
             },
             breakpoints: {
-                320: {
-                    slidesPerView: 1,
-                },
-                768: {
-                    slidesPerView: 2,
-                },
-                1024: {
-                    slidesPerView: 3,
-                },
-                1440: {
-                    slidesPerView: 4,
-                }
+                320: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+                1440: { slidesPerView: 4 }
             }
         });
 
-        // Функция для загрузки трендовых фильмов
         function loadTrending(timeWindow) {
             fetch(`/trending?timeWindow=${timeWindow}`)
                 .then(response => response.json())
@@ -155,7 +151,7 @@
                             </a>
                         </div>
                     `).join('');
-                    trendingSwiper.update(); // Обновление Swiper после загрузки данных
+                    trendingSwiper.update();
                 })
                 .catch(error => console.error('Error:', error));
         }
