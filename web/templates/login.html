@@ -3,35 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forum - Login</title>
-    <link rel="stylesheet" href="/static/login.css">
+    <title>Login</title>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Login</h1>
-        
-        {{if .Error}}
-            <p class="error-message">{{.Error}}</p>
-        {{end}}
-        
-        <form action="/login" method="post" class="login-form">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required>
-            
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
-            
-            <button type="submit">Login</button>
-        </form>
-        <div class="oauth-buttons">
-            <a href="/auth/google" class="google-login">Login with Google</a>
-            <a href="/auth/github" class="github-login">Login with GitHub</a>
-        </div>       
-        <p class="register-link">Not registered? <a href="/register">Sign up</a></p>
-
-        <div class="back-button">
-            <button onclick="window.history.back();">Back</button>
-        </div>
-    </div>
+    <h1>Login</h1>
+    {{ if .Error }}
+        <p style="color: red;">{{ .Error }}</p>
+    {{ end }}
+    <form method="POST" action="/login">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <button type="submit">Login</button>
+    </form>
+    <p>Or login with:</p>
+    <a href="/auth/google">Google</a>
+    <a href="/auth/github">GitHub</a>
 </body>
 </html>

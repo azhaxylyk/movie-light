@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -11,9 +10,9 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"time"
 	"unicode"
 
+	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -44,119 +43,98 @@ func InitOAuthConfigs() {
 	}
 }
 
-func GitHubAuthHandler(w http.ResponseWriter, r *http.Request) {
-	moderatorRequest := r.FormValue("moderator_request") == "on"
+func GitHubAuthHandler(c *gin.Context) {
+	moderatorRequest := c.Query("moderator_request") == "on"
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "moderator_request",
-		Value:    fmt.Sprintf("%v", moderatorRequest),
-		Expires:  time.Now().Add(10 * time.Minute),
-		HttpOnly: true,
-		Path:     "/",
-	})
+	c.SetCookie("moderator_request", fmt.Sprintf("%v", moderatorRequest), 600, "/", "", false, true)
 
 	url := githubOAuthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
-func GitHubCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get("code")
-	cookie, err := r.Cookie("moderator_request")
+func GitHubCallbackHandler(c *gin.Context) {
+	code := c.Query("code")
+	cookie, err := c.Cookie("moderator_request")
 	if err != nil {
 		log.Println("GitHubCallbackHandler: Error reading moderator_request cookie:", err)
 	}
 
-	moderatorRequest := cookie != nil && cookie.Value == "true"
+	moderatorRequest := false
+	if cookie != "" {
+		moderatorRequest = cookie == "true"
+	}
 
-	token, err := githubOAuthConfig.Exchange(context.Background(), code)
+	token, err := githubOAuthConfig.Exchange(c.Request.Context(), code)
 	if err != nil {
 		log.Println("GitHubCallbackHandler: GitHub OAuth2 exchange failed:", err)
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
 		return
 	}
 
-	client := githubOAuthConfig.Client(context.Background(), token)
+	client := githubOAuthConfig.Client(c.Request.Context(), token)
 	userInfo, err := getGitHubUserInfo(client)
 	if err != nil {
 		log.Println("GitHubCallbackHandler: Failed to get GitHub user info:", err)
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
 		return
 	}
 
 	sessionToken, err := models.AuthenticateOrRegisterOAuthUser(userInfo.Email, userInfo.Name, "github", moderatorRequest)
 	if err != nil {
 		log.Println("GitHubCallbackHandler: Failed to authenticate/register user:", err)
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
 		return
 	}
 
-	cookie = &http.Cookie{
-		Name:    "session_token",
-		Value:   sessionToken,
-		Expires: time.Now().Add(24 * time.Hour),
-		Path:    "/",
-	}
-	http.SetCookie(w, cookie)
-
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	c.SetCookie("session_token", sessionToken, 86400, "/", "", false, true)
+	c.Redirect(http.StatusSeeOther, "/")
 }
 
-func GoogleAuthHandler(w http.ResponseWriter, r *http.Request) {
-	moderatorRequest := r.FormValue("moderator_request") == "on"
+func GoogleAuthHandler(c *gin.Context) {
+	moderatorRequest := c.Query("moderator_request") == "on"
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "moderator_request",
-		Value:    fmt.Sprintf("%v", moderatorRequest),
-		Expires:  time.Now().Add(10 * time.Minute),
-		HttpOnly: true,
-		Path:     "/",
-	})
+	c.SetCookie("moderator_request", fmt.Sprintf("%v", moderatorRequest), 600, "/", "", false, true)
+
 	url := googleOAuthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
-func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get("code")
-	cookie, err := r.Cookie("moderator_request")
+func GoogleCallbackHandler(c *gin.Context) {
+	code := c.Query("code")
+	cookie, err := c.Cookie("moderator_request")
 	if err != nil {
 		log.Println("GoogleCallbackHandler: Error reading moderator_request cookie:", err)
 	}
 
-	moderatorRequest := cookie != nil && cookie.Value == "true"
+	moderatorRequest := false
+	if cookie != "" {
+		moderatorRequest = cookie == "true"
+	}
 
-	token, err := googleOAuthConfig.Exchange(context.Background(), code)
+	token, err := googleOAuthConfig.Exchange(c.Request.Context(), code)
 	if err != nil {
 		log.Println("GoogleCallbackHandler: Google OAuth2 exchange failed:", err)
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
 		return
 	}
-	client := googleOAuthConfig.Client(context.Background(), token)
+
+	client := googleOAuthConfig.Client(c.Request.Context(), token)
 	userInfo, err := getGoogleUserInfo(client)
 	if err != nil {
 		log.Println("GoogleCallbackHandler: Failed to get Google user info:", err)
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
 		return
 	}
 
 	sessionToken, err := models.AuthenticateOrRegisterOAuthUser(userInfo.Email, userInfo.Name, "google", moderatorRequest)
 	if err != nil {
 		log.Println("GoogleCallbackHandler: Failed to authenticate/register user:", err)
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
 		return
 	}
 
-	cookie = &http.Cookie{
-		Name:     "session_token",
-		Value:    sessionToken,
-		Expires:  time.Now().Add(24 * time.Hour),
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
-	}
-	http.SetCookie(w, cookie)
-
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	c.SetCookie("session_token", sessionToken, 86400, "/", "", false, true)
+	c.Redirect(http.StatusSeeOther, "/")
 }
 
 func getGoogleUserInfo(client *http.Client) (*models.OAuthUserInfo, error) {
@@ -175,73 +153,25 @@ func getGoogleUserInfo(client *http.Client) (*models.OAuthUserInfo, error) {
 	return &userInfo, err
 }
 
-func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		email := sanitizeInput(r.FormValue("email"))
-		username := sanitizeInput(r.FormValue("username"))
-		password := r.FormValue("password")
-		moderatorRequest := r.FormValue("moderator_request") == "on"
-		if email == "" || username == "" || password == "" {
-			ErrorHandler(w, r, http.StatusBadRequest, "All fields are required")
-			log.Println("Error: Missing required fields")
-			return
-		}
-
-		if !isValidEmail(email) {
-			ErrorHandler(w, r, http.StatusBadRequest, "Invalid email format")
-			log.Println("Error: Invalid email format")
-			return
-		}
-
-		emailExists, err := models.CheckEmailExists(email)
-		if err != nil {
-			log.Printf("Error checking if email exists: %v", err)
-			ErrorHandler(w, r, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-			return
-		}
-		if emailExists {
-			renderTemplateWithError(w, "register", "Email is already registered")
-			log.Println("Error: Email already exists")
-			return
-		}
-
-		usernameExists, err := models.CheckUsernameExists(username)
-		if err != nil {
-			log.Printf("Error checking if username exists: %v", err)
-			ErrorHandler(w, r, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-			return
-		}
-		if usernameExists {
-			renderTemplateWithError(w, "register", "Username is already taken")
-			log.Println("Error: Username already exists")
-			return
-		}
+func RegisterHandler(c *gin.Context) {
+	if c.Request.Method == http.MethodPost {
+		email := c.PostForm("email")
+		username := c.PostForm("username")
+		password := c.PostForm("password")
+		moderatorRequest := c.PostForm("moderator_request") == "on"
 
 		sessionToken, err := models.RegisterUser(email, username, password, moderatorRequest)
 		if err != nil {
-			log.Printf("Error during user registration: %v", err)
-			ErrorHandler(w, r, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			c.HTML(http.StatusOK, "register.html", gin.H{"Error": "Registration failed"})
 			return
 		}
 
-		cookie := http.Cookie{
-			Name:     "session_token",
-			Value:    sessionToken,
-			Expires:  time.Now().Add(24 * time.Hour),
-			Path:     "/",
-			HttpOnly: true,
-			Secure:   false,
-			SameSite: http.SameSiteLaxMode,
-		}
-
-		http.SetCookie(w, &cookie)
-
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		c.SetCookie("session_token", sessionToken, 86400, "/", "", false, true)
+		c.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 
-	tmpl, _ := template.ParseFiles("web/templates/register.html")
-	tmpl.Execute(w, nil)
+	c.HTML(http.StatusOK, "register.html", nil)
 }
 
 func sanitizeInput(input string) string {
@@ -259,47 +189,28 @@ func renderTemplateWithError(w http.ResponseWriter, templateName, errorMessage s
 	tmpl.Execute(w, struct{ Error string }{Error: errorMessage})
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		email := r.FormValue("email")
-		password := r.FormValue("password")
+func LoginHandler(c *gin.Context) {
+	if c.Request.Method == http.MethodPost {
+		email := c.PostForm("email")
+		password := c.PostForm("password")
 
 		sessionToken, err := models.AuthenticateUser(email, password)
 		if err != nil {
-			tmpl, _ := template.ParseFiles("web/templates/login.html")
-			tmpl.Execute(w, struct{ Error string }{Error: "Invalid email or password"})
+			c.HTML(http.StatusOK, "login.html", gin.H{"Error": "Invalid email or password"})
 			return
 		}
 
-		cookie := http.Cookie{
-			Name:     "session_token",
-			Value:    sessionToken,
-			Expires:  time.Now().Add(24 * time.Hour),
-			Path:     "/",
-			HttpOnly: true,
-			Secure:   false,
-			SameSite: http.SameSiteLaxMode,
-		}
-
-		http.SetCookie(w, &cookie)
-
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		c.SetCookie("session_token", sessionToken, 86400, "/", "", false, true)
+		c.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 
-	tmpl, _ := template.ParseFiles("web/templates/login.html")
-	tmpl.Execute(w, nil)
+	c.HTML(http.StatusOK, "login.html", nil)
 }
 
-func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	cookie := http.Cookie{
-		Name:    "session_token",
-		Value:   "",
-		Expires: time.Now().Add(-1 * time.Hour),
-	}
-	http.SetCookie(w, &cookie)
-
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+func LogoutHandler(c *gin.Context) {
+	c.SetCookie("session_token", "", -1, "/", "", false, true)
+	c.Redirect(http.StatusSeeOther, "/login")
 }
 
 func isValidEmail(email string) bool {
