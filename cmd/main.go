@@ -38,6 +38,16 @@ func main() {
 	r.GET("/auth/github", handlers.GitHubAuthHandler)
 	r.GET("/auth/github/callback", handlers.GitHubCallbackHandler)
 
+	r.GET("/trending", func(c *gin.Context) {
+		timeWindow := c.DefaultQuery("timeWindow", "day")
+		movies, err := models.GetTrendingMovies(timeWindow)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, movies)
+	})
+
 	// Защищенные маршруты
 	authGroup := r.Group("/")
 	authGroup.Use(AuthMiddleware())

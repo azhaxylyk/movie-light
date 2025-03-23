@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="header">
@@ -14,31 +15,43 @@
             <h1>Movie Light</h1>
             <div class="search-bar">
                 <input type="text" placeholder="Кино іздеу">
-                <button>Іздеу</button>
+                <button class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
             </div>
             <div class="buttons">
-                <a href="/login" class="button">Кіру</a>
-                <a href="/register class="button">Тіркелу</a>
+                <a href="/login" class="button login-button">
+                    <i class="fas fa-sign-in-alt"></i> 
+                </a>
+                <a href="/register" class="button register-button">
+                    <i class="fas fa-user-plus"></i>
+                </a>
             </div>
         </div>
     </div>
 
     <div class="hero-section">
         <div class="hero-content">
-            <h1>Movie Light Қош келдіңіз</h1>
-            <p>Миллиондаған кинолар, сіз үшін! длаьлпь взщалызщклп щфлащлухщ</p>
+            <h1>Кино әлеміне қош келдіңіз!</h1>
+            <p>Шексіз фильмдер, сіздің талғамыңызға сай!</p>
             <div class="search-bar">
                 <input type="text" placeholder="Search for a movie, tv show, person...">
-                <button>Search</button>
+                <button>
+                    <i class="fas fa-search"></i>
+                </button>
             </div>
         </div>
     </div>
 
     <div class="trending">
-        <h2>Соңғы трендтер</h2>
-        <div class="time-window">
-            <button onclick="loadTrending('day')">Бүгінгі</button>
-            <button onclick="loadTrending('week')">Апталық</button>
+        <div class="trending-header">
+            <h2>Сонғы трендтер</h2>
+            <div class="time-window">
+                <div class="time-switch">
+                    <button onclick="loadTrending('day')" class="time-button active">Бүгінгі</button>
+                    <button onclick="loadTrending('week')" class="time-button">Апталық</button>
+                </div>
+            </div>
         </div>
         <div class="swiper-container">
             <div class="swiper-wrapper">
@@ -133,6 +146,20 @@
         });
 
         function loadTrending(timeWindow) {
+            const timeSwitch = document.querySelector('.time-switch');
+            const buttons = document.querySelectorAll('.time-button');
+
+            // Убираем активный класс у всех кнопок
+            buttons.forEach(button => button.classList.remove('active'));
+
+            // Добавляем активный класс к нажатой кнопке
+            const activeButton = document.querySelector(`.time-button[onclick="loadTrending('${timeWindow}')"]`);
+            activeButton.classList.add('active');
+
+            // Обновляем атрибут data-active для сдвига фона
+            timeSwitch.setAttribute('data-active', timeWindow);
+
+            // Загружаем данные
             fetch(`/trending?timeWindow=${timeWindow}`)
                 .then(response => response.json())
                 .then(data => {

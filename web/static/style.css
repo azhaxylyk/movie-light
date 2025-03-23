@@ -172,30 +172,96 @@ body {
     position: relative;
 }
 
-.trending h2, .popular h2 {
+.popular h2 {
     font-size: 24px;
     margin-bottom: 20px;
     color: #007bff;
 }
 
-.time-window {
+.trending-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 20px;
+    padding: 0 20px; /* Добавляем отступы слева и справа */
 }
 
-.time-window button {
-    background-color: #007bff;
+.trending-header h2 {
+    margin: 0; /* Убираем отступы у заголовка */
+    font-size: 24px;
+    color: #007bff;
+}
+
+.time-window {
+    margin-bottom: 0px;
+    display: flex;
+}
+
+.time-switch {
+    display: flex;
+    background-color: #f0f0f0; /* Фон для переключателя */
+    border-radius: 25px; /* Закругленные углы */
+    padding: 5px;
+    position: relative;
+}
+
+.time-button {
+    background-color: transparent;
     border: none;
     padding: 10px 20px;
-    border-radius: 5px;
-    color: #ffffff;
+    border-radius: 25px;
+    color: #333333;
     cursor: pointer;
     font-size: 14px;
-    transition: background 0.3s;
-    margin-right: 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.time-button.active {
+    color: #ffffff; /* Белый текст для активной кнопки */
+}
+
+.time-switch::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: calc(50% - 5px);
+    height: calc(100% - 10px);
+    background-color: #007bff; /* Синий фон для активной кнопки */
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    z-index: 0;
+}
+
+.time-switch[data-active="week"]::after {
+    left: calc(50% + 5px); /* Сдвигаем фон для второй кнопки */
+}
+
+.time-button:hover {
+    background-color: rgba(0, 123, 255, 0.1); /* Легкий фон при наведении */
+}
+
+.time-button.active {
+    background-color: transparent; /* Убираем фон для активной кнопки, так как фон уже есть в ::after */
+}
+
+/* Убираем лишние стили, которые могут конфликтовать */
+.time-window button {
+    background-color: transparent; /* Убираем синий фон */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px; /* Закругленные углы */
+    color: #333333;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    margin-right: 0; /* Убираем отступ между кнопками */
 }
 
 .time-window button:hover {
-    background-color: #0056b3;
+    background-color: rgba(0, 123, 255, 0.1); /* Легкий фон при наведении */
 }
 
 .swiper-container {
@@ -313,4 +379,88 @@ body {
 
 .footer a:hover {
     text-decoration: underline;
+}
+
+/* Общие стили для кнопок */
+.button {
+    padding: 10px 20px;
+    border-radius: 25px; /* Закругленные углы */
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+    min-width: 120px;
+}
+
+/* Общие стили для кнопок */
+.button {
+    padding: 10px; /* Уменьшаем отступы */
+    border-radius: 50%; /* Делаем кнопки круглыми */
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; /* Фиксированная ширина */
+    height: 20px; /* Фиксированная высота */
+    min-width: auto; /* Убираем минимальную ширину */
+}
+
+/* Стили для кнопки "Кіру" */
+.login-button {
+    background-color: #007bff; /* Синий цвет */
+    color: #ffffff;
+    border: 2px solid #007bff;
+}
+
+.login-button:hover {
+    background-color: #0056b3; /* Темно-синий при наведении */
+    border-color: #0056b3;
+}
+
+/* Стили для кнопки "Тіркелу" */
+.register-button {
+    background-color: transparent;
+    color: #007bff;
+    border: 2px solid #007bff;
+}
+
+.register-button:hover {
+    background-color: #007bff; /* Синий при наведении */
+    color: #ffffff;
+}
+
+/* Стили для кнопки "Іздеу" */
+.search-button {
+    background-color: #007bff; /* Синий цвет */
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    border-radius: 50%; /* Делаем кнопку круглой */
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Фиксированная ширина */
+    height: 40px; /* Фиксированная высота */
+}
+
+.search-button:hover {
+    background-color: #0056b3; /* Темно-синий при наведении */
+}
+
+/* Стили для иконок */
+.button i {
+    transition: transform 0.3s ease;
+}
+
+.button:hover i {
+    transform: scale(1.1); /* Увеличение иконки при наведении */
 }

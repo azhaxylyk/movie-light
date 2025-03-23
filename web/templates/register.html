@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
+    <link rel="stylesheet" href="/static/auth.css">
 </head>
 <body>
     <h1>Register</h1>
@@ -15,15 +16,16 @@
         <input type="email" id="email" name="email" required>
         <br>
         <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
+        <input type="username" id="username" name="username" required>
         <br>
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required>
-        <br>
-        <label for="moderator_request">Request Moderator Role:</label>
-        <input type="checkbox" id="moderator_request" name="moderator_request">
-        <br>
         <button type="submit">Register</button>
     </form>
+    <p>Or register with:</p>
+    <a href="/auth/google" class="google-button">
+        <img src="/static/Google_logo.svg" alt="Google Logo">
+        Register with Google
+    </a>
 </body>
 </html>
