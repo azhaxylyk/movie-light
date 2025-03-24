@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"movie-light/internal/config"
 	"movie-light/internal/handlers"
@@ -22,6 +23,15 @@ func main() {
 	models.InitAPI()
 
 	r := gin.Default()
+	r.SetFuncMap(template.FuncMap{
+		"until": func(n int) []int {
+			var result []int
+			for i := 1; i <= n; i++ {
+				result = append(result, i)
+			}
+			return result
+		},
+	})
 	r.LoadHTMLGlob("web/templates/*")
 	r.Static("/static", "web/static")
 
@@ -30,16 +40,21 @@ func main() {
 	r.POST("/login", handlers.LoginHandler)
 	r.GET("/register", handlers.RegisterHandler)
 	r.POST("/register", handlers.RegisterHandler)
-	r.GET("/logout", handlers.LogoutHandler)
+	r.POST("/logout", handlers.LogoutHandler)
 
 	// Маршруты для OAuth
 	r.GET("/auth/google", handlers.GoogleAuthHandler)
 	r.GET("/auth/google/callback", handlers.GoogleCallbackHandler)
-	r.GET("/auth/github", handlers.GitHubAuthHandler)
-	r.GET("/auth/github/callback", handlers.GitHubCallbackHandler)
+
+	// Главная страница (доступна без авторизации)
+	r.GET("/", handlers.HomePage)
+	r.GET("/movie/:id", handlers.MovieDetailPage)
+
+	r.POST("/add-discussion", handlers.AddDiscussion)
+	r.POST("/add-review", handlers.AddReview)
 
 	r.GET("/trending", func(c *gin.Context) {
-		timeWindow := c.DefaultQuery("timeWindow", "day")
+		timeWindow := c.DefaultQuery("timeWindow", "day") // По умолчанию "day"
 		movies, err := models.GetTrendingMovies(timeWindow)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -48,12 +63,11 @@ func main() {
 		c.JSON(http.StatusOK, movies)
 	})
 
-	// Защищенные маршруты
+	// Защищенные маршруты (требуют авторизации)
 	authGroup := r.Group("/")
 	authGroup.Use(AuthMiddleware())
 	{
-		authGroup.GET("/", handlers.HomePage)
-		authGroup.GET("/movie/:id", handlers.MovieDetailPage)
+		authGroup.GET("/profile", handlers.ProfilePage)
 	}
 
 	r.Run(":8080")

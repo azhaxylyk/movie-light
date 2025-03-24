@@ -32,6 +32,7 @@ func CreateTables(db *sql.DB) error {
 		"./migrations/movies.sql",
 		"./migrations/reviews.sql",
 		"./migrations/favorites.sql",
+		"./migrations/discussions.sql",
 	}
 
 	for _, file := range sqlFiles {

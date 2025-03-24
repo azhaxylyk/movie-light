@@ -2,10 +2,7 @@ package models
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"os"
+	"time"
 )
 
 var db *sql.DB
@@ -14,98 +11,104 @@ func SetDB(database *sql.DB) {
 	db = database
 }
 
-// MovieDetail содержит подробную информацию о фильме
-type MovieDetail struct {
-	ID               int     `json:"id"`
-	Title            string  `json:"title"`
-	Overview         string  `json:"overview"`
-	PosterPath       string  `json:"poster_path"`
-	ReleaseDate      string  `json:"release_date"`
-	OriginalTitle    string  `json:"original_title"`
-	OriginalLanguage string  `json:"original_language"`
-	Popularity       float64 `json:"popularity"`
-	VoteAverage      float64 `json:"vote_average"`
-	VoteCount        int     `json:"vote_count"`
-	Runtime          int     `json:"runtime"`
-	Tagline          string  `json:"tagline"`
-	Genres           []Genre `json:"genres"`
-	Credits          Credits `json:"credits"`
+type Discussion struct {
+	ID         int
+	UserID     int
+	MovieID    int
+	Discussion string
+	ParentID   *int // Может быть NULL
+	CreatedAt  time.Time
+	Replies    []Discussion // Список ответов
 }
 
-// Genre представляет жанр фильма
-type Genre struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+type Review struct {
+	ID        int
+	UserID    string
+	MovieID   int
+	Rating    int
+	Review    string
+	CreatedAt time.Time
 }
 
-// Credits содержит информацию о съемочной группе и актерах
-type Credits struct {
-	Cast []CastMember `json:"cast"`
-}
-
-// CastMember представляет актера
-type CastMember struct {
-	Name        string `json:"name"`
-	Character   string `json:"character"`
-	ProfilePath string `json:"profile_path"`
-}
-
-// GetMovieDetails получает подробную информацию о фильме по его ID
-func GetMovieDetails(movieID string) (*MovieDetail, error) {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		return nil, fmt.Errorf("API_KEY не найден в переменных окружения")
-	}
-
-	// Запрос к API TMDB для получения данных о фильме
-	url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%s?api_key=%s&language=ru&append_to_response=credits", movieID, apiKey)
-
-	resp, err := http.Get(url)
+func GetReviewsByMovieID(movieID string) ([]Review, error) {
+	rows, err := db.Query(`
+		SELECT id, user_id, movie_id, rating, review, created_at
+		FROM reviews 
+		WHERE movie_id = ? 
+		ORDER BY created_at DESC
+	`, movieID)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer rows.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ошибка запроса: %s", resp.Status)
+	var reviews []Review
+	for rows.Next() {
+		var r Review
+		err := rows.Scan(&r.ID, &r.UserID, &r.MovieID, &r.Rating, &r.Review, &r.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, r)
 	}
 
-	var movie MovieDetail
-	if err := json.NewDecoder(resp.Body).Decode(&movie); err != nil {
-		return nil, err
-	}
-
-	fmt.Println("Переведенные данные:", movie)
-	return &movie, nil
+	return reviews, nil
 }
 
-// GetSimilarMovies получает список похожих фильмов
-func GetSimilarMovies(movieID string) ([]Movie, error) {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		return nil, fmt.Errorf("API_KEY не найден в переменных окружения")
-	}
-
-	// Запрос к API TMDB для получения похожих фильмов
-	url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%s/similar?api_key=%s&language=ru", movieID, apiKey)
-
-	resp, err := http.Get(url)
+func GetDiscussionsByMovieID(movieID string) ([]Discussion, error) {
+	// Получаем все обсуждения
+	rows, err := db.Query(`
+		SELECT id, user_id, movie_id, discussion, parent_id, created_at
+		FROM discussions 
+		WHERE movie_id = ? 
+		ORDER BY created_at ASC
+	`, movieID)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer rows.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ошибка запроса: %s", resp.Status)
+	var discussions []Discussion
+	var repliesMap = make(map[int][]Discussion)
+
+	// Разбиваем данные на обсуждения и ответы
+	for rows.Next() {
+		var d Discussion
+		err := rows.Scan(&d.ID, &d.UserID, &d.MovieID, &d.Discussion, &d.ParentID, &d.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		if d.ParentID == nil {
+			discussions = append(discussions, d) // Основные обсуждения
+		} else {
+			repliesMap[*d.ParentID] = append(repliesMap[*d.ParentID], d) // Ответы
+		}
 	}
 
-	var data struct {
-		Results []Movie `json:"results"`
+	// Добавляем ответы к обсуждениям
+	for i := range discussions {
+		if replies, ok := repliesMap[discussions[i].ID]; ok {
+			discussions[i].Replies = replies
+		}
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return nil, err
-	}
+	return discussions, nil
+}
 
-	return data.Results, nil
+// AddDiscussion добавляет новое обсуждение или ответ
+func AddDiscussion(userID, movieID int, discussion string, parentID *int) error {
+	_, err := db.Exec(`
+		INSERT INTO discussions (user_id, movie_id, discussion, parent_id) 
+		VALUES (?, ?, ?, ?)
+	`, userID, movieID, discussion, parentID)
+	return err
+}
+
+func AddReview(userID, movieID, rating int, reviewText string) error {
+	_, err := db.Exec(`
+		INSERT INTO reviews (user_id, movie_id, rating, review, created_at) 
+		VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+	`, userID, movieID, rating, reviewText)
+	return err
 }

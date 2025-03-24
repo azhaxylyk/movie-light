@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-container">
+            <h1>Movie Light</h1>
+            <div class="search-bar">
+                <input type="text" placeholder="Кино іздеу">
+                <button class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div class="buttons">
+                <a href="/profile" class="button profile-button">
+                    <i class="fas fa-user"></i> {{ .Username }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <h1>Профиль</h1>
+        <p>Добро пожаловать, {{ .Username }}!</p>
+
+        <!-- Кнопка выхода -->
+        <form action="/logout" method="POST">
+            <button type="submit" class="logout-button">
+                <i class="fas fa-sign-out-alt"></i> Шығу
+            </button>
+        </form>
+
+        <!-- Здесь позже можно добавить избранные фильмы, отзывы и т.д. -->
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Автор: Aknur Z.</p>
+            <p>
+                <a href="https://www.linkedin.com/in/azhaxylyk" target="_blank">LinkedIn: azhaxylyk</a> | 
+                <a href="https://github.com/azhaxylyk" target="_blank">GitHub: azhaxylyk</a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

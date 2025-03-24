@@ -169,7 +169,8 @@ body {
     background-color: #fff;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    overflow: hidden; /* Добавлено для скрытия переполнения */
+    overflow: hidden;
+    position: relative;
 }
 
 .movie-cast h2,
@@ -180,9 +181,76 @@ body {
 }
 
 .swiper-container {
+    position: relative;
     width: 100%;
     padding: 20px 0;
-    overflow: hidden; /* Добавлено для скрытия переполнения */
+    overflow: hidden;
+}
+
+.swiper-container::before,
+.swiper-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.swiper-container::before {
+    left: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+}
+
+.swiper-container::after {
+    right: 0;
+    background: linear-gradient(270deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    flex-shrink: 0; /* Запрещаем сжатие */
+    min-width: 40px; /* Минимальная ширина */
+    min-height: 40px; /* Минимальная высота */
+    border-radius: 50%; /* Делаем круг */
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    margin: 0; /* Убираем возможные отступы */
+    padding: 0; /* Убираем внутренние отступы */
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    background-color: #0069d9;
+    transform: translateY(-50%) scale(1.1);
+    opacity: 1;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Размещаем кнопки по краям */
+.swiper-button-next {
+    right: 10px;
+}
+.swiper-button-prev {
+    left: 10px;
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
 }
 
 .swiper-slide {
@@ -191,11 +259,21 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     padding: 15px;
     text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.swiper-slide:hover {
+    transform: translateY(-5px);
 }
 
 .swiper-slide img {
     width: 100%;
     border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.swiper-slide:hover img {
+    transform: scale(1.03);
 }
 
 .swiper-slide h2 {
@@ -207,11 +285,6 @@ body {
 .swiper-slide .movie-details {
     font-size: 14px;
     color: #666;
-}
-
-.swiper-button-next,
-.swiper-button-prev {
-    color: #007bff;
 }
 
 .cast-member {
@@ -226,7 +299,8 @@ body {
     width: 150px;
     height: 200px;
     border-radius: 8px;
-    object-fit: cover; /* Ensure the image covers the area */
+    object-fit: cover;
+    margin-bottom: 10px;
 }
 
 .cast-member h3 {
@@ -238,4 +312,210 @@ body {
 .cast-member p {
     font-size: 14px;
     color: #666;
+}
+
+.social-section {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #ddd;
+}
+
+.tab-link {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: #555;
+}
+
+.tab-link.active {
+    border-bottom: 3px solid black;
+    color: black;
+}
+
+.tab-content {
+    display: none;
+    padding: 15px 0;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.review, .discussion {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.review-header {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.review-author {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.review-meta, .discussion-meta {
+    color: #777;
+    font-size: 14px;
+}
+
+.review-text {
+    margin-top: 10px;
+}
+
+
+.footer {
+    width: 100%;
+    background-color: #1c1c1c;
+    color: #ffffff;
+    padding: 20px 0;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+.button {
+    padding: 10px; /* Уменьшаем отступы */
+    border-radius: 50%; /* Делаем кнопки круглыми */
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; /* Фиксированная ширина */
+    height: 20px; /* Фиксированная высота */
+    min-width: auto; /* Убираем минимальную ширину */
+}
+
+/* Стили для кнопки "Кіру" */
+.login-button {
+    background-color: #007bff; /* Синий цвет */
+    color: #ffffff;
+    border: 2px solid #007bff;
+}
+
+.login-button:hover {
+    background-color: #0056b3; /* Темно-синий при наведении */
+    border-color: #0056b3;
+}
+
+/* Стили для кнопки "Тіркелу" */
+.register-button {
+    background-color: transparent;
+    color: #007bff;
+    border: 2px solid #007bff;
+}
+
+.register-button:hover {
+    background-color: #007bff; /* Синий при наведении */
+    color: #ffffff;
+}
+
+/* Стили для кнопки "Іздеу" */
+.search-button {
+    background-color: #007bff; /* Синий цвет */
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    border-radius: 50%; /* Делаем кнопку круглой */
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Фиксированная ширина */
+    height: 40px; /* Фиксированная высота */
+}
+
+.search-button:hover {
+    background-color: #0056b3; /* Темно-синий при наведении */
+}
+
+/* Стили для иконок */
+.button i {
+    transition: transform 0.3s ease;
+}
+
+.button:hover i {
+    transform: scale(1.1); /* Увеличение иконки при наведении */
+}
+
+.profile-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-button:hover {
+    background-color: #0056b3;
+}
+
+.profile-button i {
+    font-size: 16px;
+}
+
+.profile-content {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.profile-content h1 {
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+.profile-content p {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 20px;
 }

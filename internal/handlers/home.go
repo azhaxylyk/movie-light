@@ -9,6 +9,20 @@ import (
 )
 
 func HomePage(c *gin.Context) {
+	// Получаем сессионный токен из cookies
+	sessionToken, err := c.Cookie("session_token")
+	loggedIn := false
+	var username string
+
+	if err == nil && sessionToken != "" {
+		// Проверяем валидность токена
+		userID, usernameFromDB, err := models.GetIDBySessionToken(sessionToken)
+		if err == nil && userID != "" {
+			loggedIn = true
+			username = usernameFromDB
+		}
+	}
+
 	// Получаем популярные фильмы
 	movies, err := models.GetPopularMovies()
 	if err != nil {
@@ -32,5 +46,28 @@ func HomePage(c *gin.Context) {
 	c.HTML(http.StatusOK, "home.html", gin.H{
 		"Movies":         movies,
 		"TrendingMovies": trendingMovies,
+		"LoggedIn":       loggedIn, // Передаем информацию о том, авторизован ли пользователь
+		"Username":       username, // Передаем имя пользователя, если он авторизован
+	})
+}
+
+func ProfilePage(c *gin.Context) {
+	// Получаем сессионный токен из cookies
+	sessionToken, err := c.Cookie("session_token")
+	if err != nil {
+		c.Redirect(http.StatusFound, "/login") // Перенаправляем на страницу входа, если токен отсутствует
+		return
+	}
+
+	// Получаем данные пользователя по токену
+	_, username, err := models.GetIDBySessionToken(sessionToken)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/login") // Перенаправляем на страницу входа, если токен недействителен
+		return
+	}
+
+	// Передаем данные в шаблон
+	c.HTML(http.StatusOK, "profile.html", gin.H{
+		"Username": username,
 	})
 }

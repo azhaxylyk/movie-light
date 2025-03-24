@@ -7,21 +7,48 @@
     <link rel="stylesheet" href="/static/movie.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+<script>
+    function openTab(evt, tabName) {
+        let tabContents = document.querySelectorAll(".tab-content");
+        let tabLinks = document.querySelectorAll(".tab-link");
+    
+        tabContents.forEach(content => content.classList.remove("active"));
+        tabLinks.forEach(link => link.classList.remove("active"));
+    
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+    </script>
 <body>
-    <header class="header">
+    <div class="header">
         <div class="header-container">
-            <h1>MovieLight</h1>
+            <h1>Movie Light</h1>
             <div class="search-bar">
-                <input type="text" placeholder="Фильм іздеу">
-                <button>Іздеу</button>
+                <input type="text" placeholder="Кино іздеу">
+                <button class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
             </div>
             <div class="buttons">
-                <button>Кіру</button>
-                <button>Тіркелу</button>
+                {{ if .LoggedIn }}
+                    <!-- Если пользователь авторизован, показываем кнопку профиля -->
+                    <a href="/profile" class="button profile-button">
+                        <i class="fas fa-user"></i>
+                    </a>
+                {{ else }}
+                    <!-- Если пользователь не авторизован, показываем кнопки входа и регистрации -->
+                    <a href="/login" class="button login-button">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </a>
+                    <a href="/register" class="button register-button">
+                        <i class="fas fa-user-plus"></i>
+                    </a>
+                {{ end }}
             </div>
         </div>
-    </header>
+    </div>
 
     <main class="movie-detail">
         <div class="movie-poster">
@@ -61,14 +88,51 @@
                 </div>
                 {{ end }}
             </div>
-            <div class="swiper-button-next"></div>
             <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
         </div>
     </section>
 
+    <section class="social-section">
+        <h2>Social</h2>
+        <div class="tabs">
+            <button class="tab-link active" onclick="openTab(event, 'reviews')">Reviews <span id="reviews-count">{{ len .Reviews }}</span></button>
+            <button class="tab-link" onclick="openTab(event, 'discussions')">Discussions <span id="discussions-count">{{ len .Discussions }}</span></button>
+        </div>
+    
+        <div id="reviews" class="tab-content active">
+            {{ range .Reviews }}
+            <div class="review">
+                <div class="review-header">
+                    <img src="/static/default-user.jpg" alt="User" class="user-avatar">
+                    <div>
+                        <p class="review-author">A review by {{ .UserID }}</p>
+                        <p class="review-meta">Written by <strong>{{ .UserID }}</strong> on {{ .CreatedAt }}</p>
+                    </div>
+                </div>
+                <p class="review-text">{{ .Review }}</p>
+            </div>
+            {{ else }}
+            <p>No reviews yet.</p>
+            {{ end }}
+        </div>
+    
+        <div id="discussions" class="tab-content">
+            {{ range .Discussions }}
+            <div class="discussion">
+                <p class="discussion-title">{{ .Title }}</p>
+                <p class="discussion-meta">Started by {{ .UserID }} on {{ .CreatedAt }}</p>
+            </div>
+            {{ else }}
+            <p>No discussions yet.</p>
+            {{ end }}
+        </div>
+    </section>
+    
+
     <section class="similar-movies">
         <h2>Ұқсас фильмдер</h2>
-        <div class="swiper-container">
+        <div class="swiper-container similar-swiper">
             <div class="swiper-wrapper">
                 {{ range .SimilarMovies }}
                 <div class="swiper-slide">
@@ -85,20 +149,29 @@
                 <p>Ұқсас фильмдер табылмады.</p>
                 {{ end }}
             </div>
-            <div class="swiper-button-next"></div>
             <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
         </div>
     </section>
-
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Автор: Aknur Z.</p>
+            <p>
+                <a href="https://www.linkedin.com/in/azhaxylyk" target="_blank">LinkedIn: azhaxylyk</a> | 
+                <a href="https://github.com/azhaxylyk" target="_blank">GitHub: azhaxylyk</a>
+            </p>
+        </div>
+    </footer>
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // Карусель актеров
             new Swiper('.cast-swiper', {
                 slidesPerView: 5,
                 spaceBetween: 10,
                 navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
+                    nextEl: '.cast-swiper .swiper-button-next',
+                    prevEl: '.cast-swiper .swiper-button-prev',
                 },
                 breakpoints: {
                     320: { slidesPerView: 2 },
@@ -108,12 +181,13 @@
                 }
             });
 
-            new Swiper('.similar-movies .swiper-container', {
+            // Карусель похожих фильмов
+            new Swiper('.similar-swiper', {
                 slidesPerView: 4,
                 spaceBetween: 10,
                 navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
+                    nextEl: '.similar-swiper .swiper-button-next',
+                    prevEl: '.similar-swiper .swiper-button-prev',
                 },
                 breakpoints: {
                     320: { slidesPerView: 2 },

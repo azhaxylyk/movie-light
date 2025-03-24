@@ -20,22 +20,37 @@
                 </button>
             </div>
             <div class="buttons">
-                <a href="/login" class="button login-button">
-                    <i class="fas fa-sign-in-alt"></i> 
-                </a>
-                <a href="/register" class="button register-button">
-                    <i class="fas fa-user-plus"></i>
-                </a>
+                {{ if .LoggedIn }}
+                    <!-- Если пользователь авторизован, показываем кнопку профиля -->
+                    <a href="/profile" class="button profile-button">
+                        <i class="fas fa-user"></i>
+                    </a>
+                {{ else }}
+                    <!-- Если пользователь не авторизован, показываем кнопки входа и регистрации -->
+                    <a href="/login" class="button login-button">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </a>
+                    <a href="/register" class="button register-button">
+                        <i class="fas fa-user-plus"></i>
+                    </a>
+                {{ end }}
             </div>
         </div>
     </div>
 
+    <!-- Остальная часть шаблона остается без изменений -->
     <div class="hero-section">
         <div class="hero-content">
-            <h1>Кино әлеміне қош келдіңіз!</h1>
+            <h1>
+                {{ if .LoggedIn }}
+                    {{ .Username }}, кино әлеміне қош келдіңіз!
+                {{ else }}
+                    Кино әлеміне қош келдіңіз!
+                {{ end }}
+            </h1>
             <p>Шексіз фильмдер, сіздің талғамыңызға сай!</p>
             <div class="search-bar">
-                <input type="text" placeholder="Search for a movie, tv show, person...">
+                <input type="text" placeholder="Кино іздеу">
                 <button>
                     <i class="fas fa-search"></i>
                 </button>
