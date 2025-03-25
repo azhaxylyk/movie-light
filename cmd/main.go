@@ -8,6 +8,9 @@ import (
 	"movie-light/internal/models"
 	"movie-light/internal/sql"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,6 +33,15 @@ func main() {
 				result = append(result, i)
 			}
 			return result
+		},
+		"now": func() time.Time {
+			return time.Now()
+		},
+		"contains": func(s, substr string) bool {
+			return strings.Contains(s, substr)
+		},
+		"toString": func(i int) string {
+			return strconv.Itoa(i)
 		},
 	})
 	r.LoadHTMLGlob("web/templates/*")
@@ -62,7 +74,8 @@ func main() {
 		}
 		c.JSON(http.StatusOK, movies)
 	})
-
+	// Добавьте этот маршрут перед authGroup
+	r.GET("/search", handlers.SearchHandler)
 	// Защищенные маршруты (требуют авторизации)
 	authGroup := r.Group("/")
 	authGroup.Use(AuthMiddleware())

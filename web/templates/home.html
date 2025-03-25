@@ -197,6 +197,27 @@
                 })
                 .catch(error => console.error('Error:', error));
         }
+        // Обработка поиска в header
+        document.querySelectorAll('.search-bar input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const query = this.value.trim();
+                    if (query) {
+                        window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('.search-bar button').forEach(button => {
+            button.addEventListener('click', function() {
+                const input = this.closest('.search-bar').querySelector('input');
+                const query = input.value.trim();
+                if (query) {
+                    window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                }
+            });
+        });
     </script>
 </body>
 </html>

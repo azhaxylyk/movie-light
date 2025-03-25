@@ -7,25 +7,25 @@
     <link rel="stylesheet" href="/static/auth.css">
 </head>
 <body>
-    <h1>Register</h1>
+    <h1>Тіркелу</h1>
     {{ if .Error }}
         <p style="color: red;">{{ .Error }}</p>
     {{ end }}
     <form method="POST" action="/register">
-        <label for="email">Email:</label>
+        <label for="email">Эл-пошта:</label>
         <input type="email" id="email" name="email" required>
         <br>
-        <label for="username">Username:</label>
+        <label for="username">Есімі:</label>
         <input type="username" id="username" name="username" required>
         <br>
-        <label for="password">Password:</label>
+        <label for="password">Құпиясөз:</label>
         <input type="password" id="password" name="password" required>
-        <button type="submit">Register</button>
+        <button type="submit">Тіркелу</button>
     </form>
-    <p>Or register with:</p>
+    <p>Немесе:</p>
     <a href="/auth/google" class="google-button">
         <img src="/static/Google_logo.svg" alt="Google Logo">
-        Register with Google
+        Google арқылы тіркелу
     </a>
 </body>
 </html>

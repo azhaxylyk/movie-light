@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Light - Search</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/search.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-container">
+            <h1>Movie Light</h1>
+            <div class="search-bar">
+                <input type="text" placeholder="Кино іздеу" value="{{ .SearchQuery }}">
+                <button class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div class="buttons">
+                {{ if .LoggedIn }}
+                    <a href="/profile" class="button profile-button">
+                        <i class="fas fa-user"></i>
+                    </a>
+                {{ else }}
+                    <a href="/login" class="button login-button">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </a>
+                    <a href="/register" class="button register-button">
+                        <i class="fas fa-user-plus"></i>
+                    </a>
+                {{ end }}
+            </div>
+        </div>
+    </div>
+
+    <div class="search-page-container">
+        <div class="search-sidebar">
+            <h2>Сүзгілер қолданыңыз</h2>            
+            <div class="search-filters">
+                <h3>Filters</h3>
+                <form id="search-filters" method="get" action="/search">
+                    <input type="hidden" name="q" value="{{ .SearchQuery }}">
+                    
+                    <div class="filter-group">
+                        <label>Жылы</label>
+                        <input type="number" name="year" value="{{ .CurrentFilters.year }}" placeholder="Кез келген" min="1900" max="{{ now.Format "2006" }}">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Тілі</label>
+                        <select name="language">
+                            <option value="">Кез келген</option>
+                            <option value="kk" {{ if eq .CurrentFilters.language "kk" }}selected{{ end }}>Қазақша</option>
+                            <option value="ru" {{ if eq .CurrentFilters.language "ru" }}selected{{ end }}>Русский</option>
+                            <option value="en" {{ if eq .CurrentFilters.language "en" }}selected{{ end }}>English</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Рейтингі</label>
+                        <select name="rating">
+                            <option value="">Кез келген</option>
+                            <option value="5" {{ if eq .CurrentFilters.rating "5" }}selected{{ end }}>5+</option>
+                            <option value="6" {{ if eq .CurrentFilters.rating "6" }}selected{{ end }}>6+</option>
+                            <option value="7" {{ if eq .CurrentFilters.rating "7" }}selected{{ end }}>7+</option>
+                            <option value="8" {{ if eq .CurrentFilters.rating "8" }}selected{{ end }}>8+</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="apply-filters">Сүзгілеу</button>
+                    <button type="button" class="reset-filters">Өшіру</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="search-results">
+            <div class="results-header">
+                <h2>"{{ .SearchQuery }}" сұрауы бойынша</h2>
+                <div class="results-count">{{ len .Movies }} нәтиже</div>
+            </div>
+            
+            <div class="results-list">
+                {{ range .Movies }}
+                <div class="result-item">
+                    <div class="result-poster">
+                        <img src="https://image.tmdb.org/t/p/w200{{ .PosterPath }}" alt="{{ .Title }}" onerror="this.src='/static/no-image.jpg'">
+                    </div>
+                    <div class="result-details">
+                        <h3>{{ .Title }}</h3>
+                        <div class="release-date">{{ .ReleaseDate }}</div>
+                        <div class="overview">{{ .Overview }}</div>
+                        <div class="rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} дауыс)</div>
+                    </div>
+                </div>
+                {{ else }}
+                <div class="no-results">
+                    No results found for "{{ .SearchQuery }}"
+                </div>
+                {{ end }}
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Автор: Aknur Z.</p>
+            <p>
+                <a href="https://www.linkedin.com/in/azhaxylyk" target="_blank">LinkedIn: azhaxylyk</a> | 
+                <a href="https://github.com/azhaxylyk" target="_blank">GitHub: azhaxylyk</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Обработка поиска
+        document.querySelector('.search-bar input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = this.value.trim();
+                if (query) {
+                    window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+
+        document.querySelector('.search-button').addEventListener('click', function() {
+            const input = document.querySelector('.search-bar input');
+            const query = input.value.trim();
+            if (query) {
+                window.location.href = `/search?q=${encodeURIComponent(query)}`;
+            }
+        });
+
+        // Сброс фильтров
+        document.querySelector('.reset-filters').addEventListener('click', function() {
+            window.location.href = `/search?q=${encodeURIComponent("{{ .SearchQuery }}")}`;
+        });
+
+        // Переключение категорий
+        document.querySelectorAll('.category').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                // Здесь можно добавить логику загрузки разных категорий
+            });
+        });
+    </script>
+</body>
+</html>

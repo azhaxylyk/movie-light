@@ -19,6 +19,11 @@ func InitAPI() {
 	}
 }
 
+type Genre struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 // Movie представляет краткую информацию о фильме
 type Movie struct {
 	ID               int     `json:"id"`
@@ -53,12 +58,6 @@ type MovieDetail struct {
 	Credits          Credits `json:"credits"`
 }
 
-// Genre представляет жанр фильма
-type Genre struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
 // Credits содержит информацию о съемочной группе и актерах
 type Credits struct {
 	Cast []CastMember `json:"cast"`
@@ -71,7 +70,7 @@ type CastMember struct {
 	ProfilePath string `json:"profile_path"`
 }
 
-func fetchFromAPI(endpoint string, target interface{}) error {
+func FetchFromAPI(endpoint string, target interface{}) error {
 	if apiKey == "" {
 		return fmt.Errorf("API_KEY не установлен")
 	}
@@ -122,7 +121,7 @@ func GetPopularMovies() ([]Movie, error) {
 	var data struct {
 		Results []Movie `json:"results"`
 	}
-	if err := fetchFromAPI("movie/top_rated", &data); err != nil {
+	if err := FetchFromAPI("movie/top_rated", &data); err != nil {
 		return nil, err
 	}
 	return data.Results, nil
@@ -137,7 +136,7 @@ func GetTrendingMovies(timeWindow string) ([]Movie, error) {
 	var data struct {
 		Results []Movie `json:"results"`
 	}
-	if err := fetchFromAPI(fmt.Sprintf("trending/movie/%s", timeWindow), &data); err != nil {
+	if err := FetchFromAPI(fmt.Sprintf("trending/movie/%s", timeWindow), &data); err != nil {
 		return nil, err
 	}
 	return data.Results, nil
@@ -147,7 +146,7 @@ func GetTrendingMovies(timeWindow string) ([]Movie, error) {
 func GetMovieDetails(movieID string) (*MovieDetail, error) {
 	var movie MovieDetail
 	endpoint := fmt.Sprintf("movie/%s?append_to_response=credits,videos,images", movieID)
-	if err := fetchFromAPI(endpoint, &movie); err != nil {
+	if err := FetchFromAPI(endpoint, &movie); err != nil {
 		return nil, err
 	}
 	return &movie, nil
@@ -158,8 +157,46 @@ func GetSimilarMovies(movieID string) ([]Movie, error) {
 	var data struct {
 		Results []Movie `json:"results"`
 	}
-	if err := fetchFromAPI(fmt.Sprintf("movie/%s/similar", movieID), &data); err != nil {
+	if err := FetchFromAPI(fmt.Sprintf("movie/%s/similar", movieID), &data); err != nil {
 		return nil, err
 	}
 	return data.Results, nil
+}
+
+// SearchMovies выполняет поиск фильмов с фильтрами
+func SearchMovies(query string, filters map[string]string) ([]Movie, error) {
+	var data struct {
+		Results []Movie `json:"results"`
+	}
+
+	// Создаем базовый endpoint
+	endpoint := fmt.Sprintf("search/movie?query=%s", url.QueryEscape(query))
+
+	// Добавляем фильтры к запросу
+	for key, value := range filters {
+		if value != "" {
+			endpoint += fmt.Sprintf("&%s=%s", key, url.QueryEscape(value))
+		}
+	}
+
+	if err := FetchFromAPI(endpoint, &data); err != nil {
+		return nil, err
+	}
+	return data.Results, nil
+}
+
+// getGenres получает список жанров фильмов
+func GetGenres() ([]Genre, error) {
+	var response struct {
+		Genres []Genre `json:"genres"`
+	}
+
+	// Используем существующую функцию fetchFromAPI из вашего models пакета
+	err := FetchFromAPI("genre/movie/list", &response)
+	if err != nil {
+		log.Printf("Ошибка при получении жанров: %v", err)
+		return nil, fmt.Errorf("не удалось получить список жанров")
+	}
+
+	return response.Genres, nil
 }
