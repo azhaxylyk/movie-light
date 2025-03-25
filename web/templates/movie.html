@@ -94,40 +94,121 @@
     </section>
 
     <section class="social-section">
-        <h2>Social</h2>
+        <h2>Форум</h2>
         <div class="tabs">
-            <button class="tab-link active" onclick="openTab(event, 'reviews')">Reviews <span id="reviews-count">{{ len .Reviews }}</span></button>
-            <button class="tab-link" onclick="openTab(event, 'discussions')">Discussions <span id="discussions-count">{{ len .Discussions }}</span></button>
+            <button class="tab-link active" onclick="openTab(event, 'reviews')">Шолулар <span id="reviews-count">{{ len .Reviews }}</span></button>
+            <button class="tab-link" onclick="openTab(event, 'discussions')">Пікірталас <span id="discussions-count">{{ len .Discussions }}</span></button>
         </div>
     
         <div id="reviews" class="tab-content active">
+            {{ if .LoggedIn }}
+            {{ if not .UserHasReviewed }}
+                <div class="add-review-form">
+                    <h3>Пікір қалдыру</h3>
+                    <form id="review-form" onsubmit="submitReview(event)">
+                        <div class="form-group">
+                            <label for="review-rating">Рейтинг:</label>
+                            <select id="review-rating" name="rating" required>
+                                <option value="">Бағаны таңдаңыз</option>
+                                <option value="10">10 - Өте жақсы</option>
+                                <option value="9">9</option>
+                                <option value="8">8</option>
+                                <option value="7">7</option>
+                                <option value="6">6</option>
+                                <option value="5">5 - Орташа</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1 - Өте нашар</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="review-text">Пікір:</label>
+                            <textarea id="review-text" name="review" rows="5" required></textarea>
+                        </div>
+                        <input type="hidden" name="movie_id" value="{{ .Movie.ID }}">
+                        <button type="submit" class="submit-button">Жіберу</button>
+                    </form>
+                </div>
+            {{ end }}
+        {{ else }}
+            <div class="auth-notice">
+                <p>Пікір қалдыру үшін <a href="/login">кіру</a> қажет</p>
+            </div>
+        {{ end }}
             {{ range .Reviews }}
             <div class="review">
                 <div class="review-header">
                     <img src="/static/default-user.jpg" alt="User" class="user-avatar">
                     <div>
-                        <p class="review-author">A review by {{ .UserID }}</p>
-                        <p class="review-meta">Written by <strong>{{ .UserID }}</strong> on {{ .CreatedAt }}</p>
+                        <p class="review-author">{{ .Username }}</p>
+                        <div class="review-rating">
+                            <span class="rating-value">⭐ {{ .Rating }}</span>
+                        </div>
+                        <p class="review-meta">Автор: <strong>{{ .Username }}</strong>, {{ .CreatedAt }} күні</p>
                     </div>
                 </div>
                 <p class="review-text">{{ .Review }}</p>
             </div>
             {{ else }}
-            <p>No reviews yet.</p>
+            <p>Әзірге пікірлер жоқ.</p>
             {{ end }}
         </div>
     
         <div id="discussions" class="tab-content">
-            {{ range .Discussions }}
-            <div class="discussion">
-                <p class="discussion-title">{{ .Title }}</p>
-                <p class="discussion-meta">Started by {{ .UserID }} on {{ .CreatedAt }}</p>
-            </div>
+            {{ if .LoggedIn }}
+                <div class="add-discussion-form">
+                    <h3>Жаңа пікірталас бастау</h3>
+                    <form id="discussion-form" onsubmit="submitDiscussion(event)">
+                        <div class="form-group">
+                            <label for="discussion-text">Пікірталас:</label>
+                            <textarea id="discussion-text" name="discussion" rows="5" required></textarea>
+                        </div>
+                        <input type="hidden" name="movie_id" value="{{ .Movie.ID }}">
+                        <button type="submit" class="submit-button">Жіберу</button>
+                    </form>
+                </div>
             {{ else }}
-            <p>No discussions yet.</p>
+                <div class="auth-notice">
+                    <p>Пікірталас бастау үшін <a href="/login">кіру</a> қажет</p>
+                </div>
+            {{ end }}
+            {{ range .Discussions }}
+                {{ if not .ParentID }} <!-- Показываем только родительские обсуждения -->
+                    <div class="discussion">
+                        <p class="discussion-content">{{ .Discussion }}</p>
+                        <p class="discussion-meta">Бастаған: {{ .Username }}, {{ .CreatedAt }} күні</p>
+                        
+                        <!-- Рекурсивно выводим ответы -->
+                        {{ if .Replies }}
+                            <div class="replies" style="margin-left: 30px;">
+                                {{ template "discussion_replies" .Replies }}
+                            </div>
+                        {{ end }}
+                    </div>
+                {{ end }}
+            {{ else }}
+                <p>Әзірге тартыстар жоқ.</p>
             {{ end }}
         </div>
+        
+        <!-- Шаблон для ответов -->
+        {{ define "discussion_replies" }}
+            {{ range . }}
+                <div class="reply">
+                    <p class="discussion-content">{{ .Discussion }}</p>
+                    <p class="discussion-meta">Жауап: {{ .Username }}, {{ .CreatedAt }} күні</p>
+                    
+                    {{ if .Replies }}
+                        <div class="replies" style="margin-left: 30px;">
+                            {{ template "discussion_replies" .Replies }}
+                        </div>
+                    {{ end }}
+                </div>
+            {{ end }}
+        {{ end }}
     </section>
+    
     
 
     <section class="similar-movies">
@@ -196,6 +277,53 @@
                 }
             });
         });
+        function submitReview(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            fetch('/add-review', {  // Изменили с /api/reviews на /add-review
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert('Пікір қосылды!');
+                    location.reload();
+                } else {
+                    alert('Қате: ' + (data.error || 'Белгісіз қате'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Жіберу кезінде қате орын алды');
+            });
+        }
+
+        function submitDiscussion(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            fetch('/add-discussion', {  // Изменили с /api/discussions на /add-discussion
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert('Пікірталас қосылды!');
+                    location.reload();
+                } else {
+                    alert('Қате: ' + (data.error || 'Белгісіз қате'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Жіберу кезінде қате орын алды');
+            });
+        }
     </script>
 </body>
 </html>

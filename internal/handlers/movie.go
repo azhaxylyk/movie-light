@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"movie-light/internal/models"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,17 +14,19 @@ func MovieDetailPage(c *gin.Context) {
 	sessionToken, err := c.Cookie("session_token")
 	loggedIn := false
 	var username string
-
+	userHasReviewed := false
+	movieID := c.Param("id")
 	if err == nil && sessionToken != "" {
 		// Проверяем валидность токена
 		userID, usernameFromDB, err := models.GetIDBySessionToken(sessionToken)
 		if err == nil && userID != "" {
 			loggedIn = true
 			username = usernameFromDB
+			if loggedIn {
+				userHasReviewed = models.HasUserReviewedMovie(userID, movieID)
+			}
 		}
 	}
-	movieID := c.Param("id")
-	fmt.Println(movieID)
 
 	// Получаем данные о фильме с актерами
 	movie, err := models.GetMovieDetails(movieID)
@@ -52,38 +54,61 @@ func MovieDetailPage(c *gin.Context) {
 	}
 
 	// Получаем обсуждения
-	discussions, err := models.GetDiscussionsByMovieID(movieID)
+	// Получаем обсуждения
+	discussions, err := models.GetDiscussionsByMovieID(movieID) // <- Опечатка в имени переменной
 	if err != nil {
 		log.Printf("Ошибка получения обсуждений: %v", err)
 		discussions = []models.Discussion{}
 	}
 
 	c.HTML(http.StatusOK, "movie.html", gin.H{
-		"Movie":         movie,
-		"SimilarMovies": similarMovies,
-		"Reviews":       reviews,
-		"Discussions":   discussions,
-		"LoggedIn":      loggedIn, // Передаем информацию о том, авторизован ли пользователь
-		"Username":      username,
+		"Movie":           movie,
+		"SimilarMovies":   similarMovies,
+		"Reviews":         reviews,
+		"Discussions":     discussions,
+		"LoggedIn":        loggedIn,
+		"UserHasReviewed": userHasReviewed, // Передаем информацию о том, авторизован ли пользователь
+		"Username":        username,
 	})
-	fmt.Println(reviews)
 }
 
 func AddDiscussion(c *gin.Context) {
-	var input struct {
-		MovieID    int    `json:"movie_id"`
-		Discussion string `json:"discussion"`
-		ParentID   *int   `json:"parent_id"`
-	}
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректные данные"})
+	// Получаем userID из сессии
+	sessionToken, err := c.Cookie("session_token")
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Необходима авторизация"})
 		return
 	}
 
-	userID := 1 // Заменить на `c.Get("userID")`, если есть аутентификация
+	userID, _, err := models.GetIDBySessionToken(sessionToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Недействительная сессия"})
+		return
+	}
 
-	err := models.AddDiscussion(userID, input.MovieID, input.Discussion, input.ParentID)
+	movieID, err := strconv.Atoi(c.PostForm("movie_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID фильма"})
+		return
+	}
+
+	discussion := c.PostForm("discussion")
+	if discussion == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Текст обсуждения не может быть пустым"})
+		return
+	}
+
+	var parentID *int
+	if pid := c.PostForm("parent_id"); pid != "" {
+		pidInt, err := strconv.Atoi(pid)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный parent_id"})
+			return
+		}
+		parentID = &pidInt
+	}
+
+	err = models.AddDiscussion(userID, movieID, discussion, parentID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка добавления обсуждения"})
 		return
@@ -93,26 +118,38 @@ func AddDiscussion(c *gin.Context) {
 }
 
 func AddReview(c *gin.Context) {
-	var input struct {
-		MovieID int    `json:"movie_id"`
-		Rating  int    `json:"rating"`
-		Review  string `json:"review"`
-	}
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректные данные"})
+	// Получаем userID из сессии
+	sessionToken, err := c.Cookie("session_token")
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Необходима авторизация"})
 		return
 	}
 
-	// Заглушка: Получаем user_id (заменить на реальную аутентификацию)
-	userID := 1 // Если у тебя есть аутентификация, используй c.Get("userID")
-
-	if input.Rating < 1 || input.Rating > 10 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Рейтинг должен быть от 1 до 10"})
+	userID, _, err := models.GetIDBySessionToken(sessionToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Недействительная сессия"})
 		return
 	}
 
-	err := models.AddReview(userID, input.MovieID, input.Rating, input.Review)
+	movieID, err := strconv.Atoi(c.PostForm("movie_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID фильма"})
+		return
+	}
+
+	rating, err := strconv.Atoi(c.PostForm("rating"))
+	if err != nil || rating < 1 || rating > 10 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Рейтинг должен быть числом от 1 до 10"})
+		return
+	}
+
+	review := c.PostForm("review")
+	if review == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Текст отзыва не может быть пустым"})
+		return
+	}
+
+	err = models.AddReview(userID, movieID, rating, review)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка добавления отзыва"})
 		return

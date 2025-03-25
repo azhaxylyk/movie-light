@@ -519,3 +519,100 @@ body {
     color: #333;
     margin-bottom: 20px;
 }
+
+.review-rating {
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+}
+
+.star {
+    font-size: 18px;
+    color: #ccc;
+    margin-right: 2px;
+}
+
+.star.filled {
+    color: #ffc107; /* Золотой цвет для заполненных звезд */
+}
+
+.rating-value {
+    margin-left: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.discussion {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.reply {
+    border-left: 3px solid #4CAF50;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f0f0f0;
+}
+
+.discussion-content {
+    font-weight: normal;
+    margin-bottom: 5px;
+}
+
+.discussion-meta {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+.add-review-form, .add-discussion-form {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group select, 
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form-group textarea {
+    min-height: 100px;
+}
+
+.submit-button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background: #45a049;
+}
+
+.auth-notice {
+    background: #fff3cd;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
