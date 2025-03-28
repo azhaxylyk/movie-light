@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Light | Бөлме</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/room_create.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-container">
+                <h1>Movie Light</h1>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <div class="room-options">
+                <div class="option-card" id="joinRoomBtn">
+                    <div class="option-icon">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <h3 class="option-title">Бөлмеге кіру</h3>
+                    <p class="option-desc">Бар болып тұрған бөлме ID-і арқылы қосылыңыз</p>
+                    <button class="btn btn-outline">Қосылу</button>
+                </div>
+                
+                <div class="option-card" id="createRoomBtn">
+                    <div class="option-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <h3 class="option-title">Жаңа бөлме</h3>
+                    <p class="option-desc">Өзіңізге арналған жаңа бөлме құрыңыз</p>
+                    <button class="btn btn-primary">Құру</button>
+                </div>
+            </div>
+            
+            <div class="room-form" id="joinRoomForm">
+                <h3 class="form-title">Бөлмеге кіру</h3>
+                <div class="form-group">
+                    <label for="roomId">Бөлме ID</label>
+                    <input type="text" id="roomId" class="form-control" placeholder="Бөлме ID-ін енгізіңіз">
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-outline" id="cancelJoinBtn">Бас тарту</button>
+                    <button class="btn btn-primary" id="submitJoinBtn">Кіру</button>
+                </div>
+            </div>
+            
+            <div class="room-form" id="createRoomForm">
+                <h3 class="form-title">Жаңа бөлме құру</h3>
+                <div class="form-group">
+                    <label for="roomName">Бөлме атауы (міндетті емес)</label>
+                    <input type="text" id="roomName" class="form-control" placeholder="Бөлме атауын енгізіңіз">
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-outline" id="cancelCreateBtn">Бас тарту</button>
+                    <button class="btn btn-primary" id="submitCreateBtn">Құру</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Обработчики для переключения между формами
+        document.getElementById('joinRoomBtn').addEventListener('click', function() {
+            document.getElementById('joinRoomForm').style.display = 'block';
+            document.getElementById('createRoomForm').style.display = 'none';
+        });
+        
+        document.getElementById('createRoomBtn').addEventListener('click', function() {
+            document.getElementById('createRoomForm').style.display = 'block';
+            document.getElementById('joinRoomForm').style.display = 'none';
+        });
+        
+        // Обработчики для кнопок отмены
+        document.getElementById('cancelJoinBtn').addEventListener('click', function() {
+            document.getElementById('joinRoomForm').style.display = 'none';
+        });
+        
+        document.getElementById('cancelCreateBtn').addEventListener('click', function() {
+            document.getElementById('createRoomForm').style.display = 'none';
+        });
+        
+        // Обработчик для кнопки "Кіру"
+        document.getElementById('submitJoinBtn').addEventListener('click', function() {
+            const roomId = document.getElementById('roomId').value.trim();
+            if (roomId) {
+                window.location.href = '/room/' + roomId;
+            } else {
+                alert('Бөлме ID-ін енгізіңіз!');
+            }
+        });
+        
+        // Обработчик для кнопки "Құру"
+        document.getElementById('submitCreateBtn').addEventListener('click', async function() {
+            const roomName = document.getElementById('roomName').value.trim();
+            
+            const submitBtn = document.getElementById('submitCreateBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Жүктелуде...';
+            
+            try {
+                const response = await fetch('/room/new', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ roomName: roomName })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    window.location.href = '/room/' + data.roomId;
+                } else {
+                    alert('Қате орын алды: ' + (data.message || 'Белгісіз қате'));
+                }
+            } catch (error) {
+                alert('Желілік қате: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+
+    </script>
+</body>
+</html>
