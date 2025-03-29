@@ -40,6 +40,15 @@ body {
     font-weight: 700;
 }
 
+h1 a {
+    text-decoration: none;
+    color: inherit;
+}
+h1 a:hover {
+    opacity: 0.8;
+}
+
+
 .search-bar {
     display: flex;
     gap: 10px;

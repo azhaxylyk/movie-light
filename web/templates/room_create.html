@@ -11,11 +11,16 @@
     <div class="container">
         <div class="header">
             <div class="header-container">
-                <h1>Movie Light</h1>
+                <h1><a href="/">Movie Light</a></h1>
             </div>
         </div>
 
         <main class="main-content">
+            <div class="room-description">
+                <h2>Бөлмеге қош келдіңіз!</h2>
+                <p>Досыңызбен бірге фильмдерді таңдап, сәйкестіктерді табыңыз. Екеуіңізге де ұнаған фильмді бірге тамашалаңыз!</p>
+            </div>            
+
             <div class="room-options">
                 <div class="option-card" id="joinRoomBtn">
                     <div class="option-icon">
@@ -35,95 +40,103 @@
                     <button class="btn btn-primary">Құру</button>
                 </div>
             </div>
-            
-            <div class="room-form" id="joinRoomForm">
-                <h3 class="form-title">Бөлмеге кіру</h3>
-                <div class="form-group">
-                    <label for="roomId">Бөлме ID</label>
-                    <input type="text" id="roomId" class="form-control" placeholder="Бөлме ID-ін енгізіңіз">
-                </div>
-                <div class="form-actions">
-                    <button class="btn btn-outline" id="cancelJoinBtn">Бас тарту</button>
-                    <button class="btn btn-primary" id="submitJoinBtn">Кіру</button>
-                </div>
-            </div>
-            
-            <div class="room-form" id="createRoomForm">
-                <h3 class="form-title">Жаңа бөлме құру</h3>
-                <div class="form-group">
-                    <label for="roomName">Бөлме атауы (міндетті емес)</label>
-                    <input type="text" id="roomName" class="form-control" placeholder="Бөлме атауын енгізіңіз">
-                </div>
-                <div class="form-actions">
-                    <button class="btn btn-outline" id="cancelCreateBtn">Бас тарту</button>
-                    <button class="btn btn-primary" id="submitCreateBtn">Құру</button>
-                </div>
-            </div>
         </main>
     </div>
 
+    <!-- Модальные окна -->
+    <div class="modal" id="joinRoomModal">
+        <div class="modal-content">
+            <span class="close" id="closeJoinRoom">&times;</span>
+            <h3>Бөлмеге кіру</h3>
+            <input type="text" id="roomId" placeholder="Бөлме ID-ін енгізіңіз">
+            <button id="submitJoinBtn" class="btn btn-primary">Кіру</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="createRoomModal">
+        <div class="modal-content">
+            <span class="close" id="closeCreateRoom">&times;</span>
+            <h3>Жаңа бөлме құру</h3>
+            <input type="text" id="roomName" placeholder="Бөлме атауын енгізіңіз (міндетті емес)">
+            <button id="submitCreateBtn" class="btn btn-primary">Құру</button>
+        </div>
+    </div>
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Автор: Aknur Z.</p>
+            <p>
+                <a href="https://www.linkedin.com/in/azhaxylyk" target="_blank">LinkedIn: azhaxylyk</a> | 
+                <a href="https://github.com/azhaxylyk" target="_blank">GitHub: azhaxylyk</a>
+            </p>
+        </div>
+    </footer>
     <script>
-        // Обработчики для переключения между формами
-        document.getElementById('joinRoomBtn').addEventListener('click', function() {
-            document.getElementById('joinRoomForm').style.display = 'block';
-            document.getElementById('createRoomForm').style.display = 'none';
-        });
-        
-        document.getElementById('createRoomBtn').addEventListener('click', function() {
-            document.getElementById('createRoomForm').style.display = 'block';
-            document.getElementById('joinRoomForm').style.display = 'none';
-        });
-        
-        // Обработчики для кнопок отмены
-        document.getElementById('cancelJoinBtn').addEventListener('click', function() {
-            document.getElementById('joinRoomForm').style.display = 'none';
-        });
-        
-        document.getElementById('cancelCreateBtn').addEventListener('click', function() {
-            document.getElementById('createRoomForm').style.display = 'none';
-        });
-        
-        // Обработчик для кнопки "Кіру"
-        document.getElementById('submitJoinBtn').addEventListener('click', function() {
-            const roomId = document.getElementById('roomId').value.trim();
-            if (roomId) {
-                window.location.href = '/room/' + roomId;
-            } else {
-                alert('Бөлме ID-ін енгізіңіз!');
+        document.addEventListener('DOMContentLoaded', function() {
+            function openModal(modalId) {
+                document.getElementById(modalId).style.display = 'flex';
             }
-        });
-        
-        // Обработчик для кнопки "Құру"
-        document.getElementById('submitCreateBtn').addEventListener('click', async function() {
-            const roomName = document.getElementById('roomName').value.trim();
-            
-            const submitBtn = document.getElementById('submitCreateBtn');
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Жүктелуде...';
-            
-            try {
-                const response = await fetch('/room/new', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ roomName: roomName })
-                });
 
-                const data = await response.json();
-                
-                if (response.ok) {
-                    window.location.href = '/room/' + data.roomId;
-                } else {
-                    alert('Қате орын алды: ' + (data.message || 'Белгісіз қате'));
+            function closeModal(modalId) {
+                document.getElementById(modalId).style.display = 'none';
+            }
+
+            // Обработчики для открытия модальных окон
+            document.getElementById('joinRoomBtn').addEventListener('click', function() {
+                openModal('joinRoomModal');
+            });
+
+            document.getElementById('createRoomBtn').addEventListener('click', function() {
+                openModal('createRoomModal');
+            });
+
+            // Обработчики для закрытия модальных окон
+            document.getElementById('closeJoinRoom').addEventListener('click', function() {
+                closeModal('joinRoomModal');
+            });
+
+            document.getElementById('closeCreateRoom').addEventListener('click', function() {
+                closeModal('createRoomModal');
+            });
+
+            // Закрытие при клике вне модального окна
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    closeModal(event.target.id);
                 }
-            } catch (error) {
-                alert('Желілік қате: ' + error.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
-        });
+            });
 
+            // Остальной код обработчиков submit оставьте без изменений
+            document.getElementById('submitJoinBtn').addEventListener('click', function() {
+                const roomId = document.getElementById('roomId').value.trim();
+                if (roomId) {
+                    window.location.href = '/room/' + roomId;
+                } else {
+                    alert('Бөлме ID-ін енгізіңіз!');
+                }
+            });
+
+            document.getElementById('submitCreateBtn').addEventListener('click', async function() {
+                const roomName = document.getElementById('roomName').value.trim();
+                
+                try {
+                    const response = await fetch('/room/new', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ roomName })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        window.location.href = '/room/' + data.roomId;
+                    } else {
+                        alert('Қате орын алды: ' + (data.message || 'Белгісіз қате'));
+                    }
+                } catch (error) {
+                    alert('Желілік қате: ' + error.message);
+                }
+            });
+        });
     </script>
 </body>
 </html>

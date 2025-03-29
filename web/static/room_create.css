@@ -10,7 +10,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
 }
 
 body {
@@ -24,6 +24,54 @@ body {
     margin: 0 auto;
     padding: 20px;
 }
+
+.room-description {
+    position: relative;
+    width: 100vw;
+    height: 300px;
+    background-image: url('/static/static.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    padding: 80px 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 80px; /* Отступ от хедера */
+    overflow: hidden;
+}
+
+.room-description::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Затемнение */
+    z-index: 1;
+}
+
+.room-description h2 {
+    font-size: 48px;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 2;
+}
+
+.room-description p {
+    font-size: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+
 
 .header {
     width: 100%;
@@ -56,6 +104,15 @@ body {
     font-weight: 700;
 }
 
+h1 a {
+    text-decoration: none;
+    color: inherit;
+}
+h1 a:hover {
+    opacity: 0.8;
+}
+
+
 .main-content {
     display: flex;
     flex-direction: column;
@@ -67,10 +124,11 @@ body {
 
 .room-options {
     display: flex;
-    gap: 30px;
-    width: 100%;
-    max-width: 800px;
+    justify-content: center;
+    gap: 20px; /* Расстояние между карточками */
+    margin-top: 40px; /* Увеличиваем отступ сверху */
 }
+
 
 .option-card {
     flex: 1;
@@ -138,55 +196,6 @@ body {
     background: rgba(232, 124, 3, 0.1);
 }
 
-.room-form {
-    display: none;
-    width: 100%;
-    max-width: 500px;
-    background: var(--gray);
-    border-radius: 10px;
-    padding: 30px;
-    margin-top: 30px;
-}
-
-.form-title {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    text-align: center;
-    color: var(--light);
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--light);
-}
-
-.form-control {
-    width: 100%;
-    padding: 12px 15px;
-    background: rgba(0,0,0,0.2);
-    border: 1px solid var(--gray);
-    border-radius: 5px;
-    color: var(--light);
-    font-size: 1rem;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--accent);
-}
-
-.form-actions {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 30px;
-}
-
 @media (max-width: 768px) {
     .room-options {
         flex-direction: column;
@@ -195,4 +204,107 @@ body {
     .option-card {
         padding: 25px;
     }
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-content {
+    background: #1B263B;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    width: 380px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease-in-out;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    transition: color 0.3s ease-in-out;
+}
+
+.close:hover {
+    color: #ff4757;
+}
+
+.modal-content h3 {
+    margin-bottom: 15px;
+    color: #ffffff;
+    font-size: 1.5rem;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.modal-content button {
+    background: var(--primary);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+.modal-content button:hover {
+    background: var(--secondary);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.footer {
+    width: 100%;
+    background-color: #1c1c1c;
+    color: #ffffff;
+    padding: 20px 0;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
 }

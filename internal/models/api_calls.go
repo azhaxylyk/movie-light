@@ -124,6 +124,7 @@ func GetPopularMovies() ([]Movie, error) {
 	if err := FetchFromAPI("movie/top_rated", &data); err != nil {
 		return nil, err
 	}
+	log.Printf("Got %d movies from API", len(data.Results))
 	return data.Results, nil
 }
 
@@ -199,4 +200,33 @@ func GetGenres() ([]Genre, error) {
 	}
 
 	return response.Genres, nil
+}
+
+func GetGenreFilms(genres []int) ([]Movie, error) {
+	if len(genres) == 0 {
+		log.Println("Список жанров пуст, возвращаем популярные фильмы")
+		return GetPopularMovies()
+	}
+
+	// Преобразуем массив жанров в строку, разделённую запятыми
+	genreIDs := ""
+	for i, id := range genres {
+		if i > 0 {
+			genreIDs += ","
+		}
+		genreIDs += fmt.Sprintf("%d", id)
+	}
+
+	endpoint := fmt.Sprintf("discover/movie?with_genres=%s&sort_by=popularity.desc", url.QueryEscape(genreIDs))
+
+	var data struct {
+		Results []Movie `json:"results"`
+	}
+
+	if err := FetchFromAPI(endpoint, &data); err != nil {
+		log.Printf("Ошибка при получении фильмов по жанрам: %v", err)
+		return nil, err
+	}
+
+	return data.Results, nil
 }

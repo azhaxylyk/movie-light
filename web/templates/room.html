@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Light - Бөлме #{{ .RoomID }}</title>
+    <link rel="stylesheet" href="/static/room.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-container">
+            <h1><a href="/">Movie Light</a></h1>
+            <button class="exit-btn" id="exitBtn">
+                <i class="fas fa-sign-out-alt"></i> Шығу
+            </button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <!-- Боковая панель -->
+        <div class="sidebar">
+            <!-- Секция приглашения (скрывается после подключения) -->
+            <div class="invite-section" id="inviteSection">
+                <h3>Досыңызды шақырыңыз</h3>
+                <p>Бөлмеге қосылу үшін бұл сілтемені жіберіңіз:</p>
+                <div class="invite-link">
+                    <input type="text" id="roomUrl" value="{{ .BaseURL }}/room/{{ .RoomID }}" readonly>
+                    <button onclick="copyRoomUrl()"><i class="fas fa-copy"></i></button>
+                </div>
+                {{ if .IsCreator }}
+                <p>Сіз бөлменің иесісіз.</p>
+                {{ else }}
+                <p>{{ .OtherUser }} сізді бөлмеге шақырды</p>
+                {{ end }}
+            </div>
+
+            <!-- Секция ожидания -->
+            <div class="waiting-section" id="waitingSection">
+                <h3>Дос қосылуын күтуде...</h3>
+                <div class="loader"></div>
+                <p>Бөлме ID: {{ .RoomID }}</p>
+            </div>
+
+            <!-- Секция выбора жанров -->
+            <div class="genre-section" id="genreSection">
+                <div class="partner-info">
+                    <h3>{{ if .IsCreator }}{{ .OtherUser }}{{ else }}{{ .OtherUser }}{{ end }} бірге фильм іздейсіз!</h3>
+                    <p>Бірге ұнайтын фильмді табыңыз</p>
+                </div>
+                <h3>Фильм жанрын таңдаңыз</h3>
+                <p>Бір немесе бірнеше жанр таңдаңыз (мүмкін ешқандай таңдамау)</p>
+                <div class="genre-grid">
+                    <button class="genre-btn" data-genre="28">Экшн</button>
+                    <button class="genre-btn" data-genre="35">Комедия</button>
+                    <button class="genre-btn" data-genre="18">Драма</button>
+                    <button class="genre-btn" data-genre="27">Қорқыныш</button>
+                    <button class="genre-btn" data-genre="10749">Романтика</button>
+                    <button class="genre-btn" data-genre="878">Фантастика</button>
+                    <button class="genre-btn" data-genre="">Кез келген</button>
+                </div>
+                <button id="startSwipingBtn" class="start-btn">
+                    Фильмдерді іздеу
+                </button>
+            </div>
+        </div>
+        
+        <!-- Основной контент -->
+        <div class="content">
+            <!-- Секция свайпа -->
+            <div class="swipe-container" id="swipeSection">
+                <div class="film-card" id="currentFilmCard">
+                    <div class="film-info">
+                        <h3 id="filmTitle">Фильм атауы</h3>
+                        <p id="filmYear">Жыл</p>
+                        <p id="filmRating">⭐ Рейтинг</p>
+                    </div>
+                </div>
+                
+                <div class="swipe-buttons">
+                    <button class="swipe-btn dislike-btn" id="dislikeBtn"><i class="fas fa-times"></i></button>
+                    <button class="swipe-btn like-btn" id="likeBtn"><i class="fas fa-heart"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомление о совпадении -->
+    <div class="match-notification" id="matchNotification">
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="match-content">
+            <h2>Сәйкестік!!!</h2>
+            <div class="matched-film-card">
+                <div class="matched-film-poster" id="matchedFilmPoster"></div>
+                <h3 id="matchFilmTitle">Фильм атауы</h3>
+                <p class="match-message">Екеуіңіз де бұл фильмді ұнаттыңыз!</p>
+                <button class="close-match-btn" id="closeMatchBtn">Жабу</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket соединение
+        const socket = new WebSocket(`ws://${window.location.host}/ws/room/{{ .RoomID }}`);
+        let selectedGenres = [];
+        let currentFilmIndex = 0;
+        let films = [];
+
+        // Копирование ссылки на комнату
+        function copyRoomUrl() {
+            const copyText = document.getElementById("roomUrl");
+            copyText.select();
+            document.execCommand("copy");
+            alert("Сілтеме көшірілді!");
+        }
+
+        // Выход из комнаты
+        document.getElementById('exitBtn').addEventListener('click', function() {
+            if (confirm("Бөлмеден шығуға сенімдісіз бе?")) {
+                window.location.href = "/";
+            }
+        });
+
+        // Закрытие уведомления о совпадении
+        document.getElementById('closeMatchBtn').addEventListener('click', function() {
+            document.getElementById('matchNotification').style.display = 'none';
+        });
+
+        // Обработчики кнопок жанров
+        document.querySelectorAll('.genre-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const genre = this.dataset.genre === "" ? "" : parseInt(this.dataset.genre);
+                const index = selectedGenres.indexOf(genre);
+                
+                if (index === -1) {
+                    // Добавляем жанр
+                    selectedGenres.push(genre);
+                    this.classList.add('selected');
+                } else {
+                    // Удаляем жанр
+                    selectedGenres.splice(index, 1);
+                    this.classList.remove('selected');
+                }
+            });
+        });
+
+        // Начало свайпа
+        document.getElementById('startSwipingBtn').addEventListener('click', function() {
+            // Convert all selected genres to numbers (кроме пустой строки)
+            const numericGenres = selectedGenres.map(genre => genre === "" ? "" : parseInt(genre));
+            
+            socket.send(JSON.stringify({
+                type: 'select_genre',
+                genres: numericGenres
+            }));
+            
+            document.getElementById('genreSection').style.display = 'none';
+            document.getElementById('swipeSection').style.display = 'flex';
+        });
+
+        // Обработчики свайп-кнопок
+        document.getElementById('likeBtn').addEventListener('click', () => {
+            swipeFilm('like');
+        });
+        
+        document.getElementById('dislikeBtn').addEventListener('click', () => {
+            swipeFilm('dislike');
+        });
+
+        function swipeFilm(action) {
+            if (films.length === 0) return;
+            
+            const currentFilm = films[currentFilmIndex];
+            socket.send(JSON.stringify({
+                type: 'swipe',
+                filmId: currentFilm.id,
+                action: action
+            }));
+            
+            // Анимация свайпа
+            const card = document.getElementById('currentFilmCard');
+            if (!card) return;
+            
+            card.classList.add(action === 'like' ? 'swipe-right' : 'swipe-left');
+            
+            setTimeout(() => {
+                card.classList.remove('swipe-right', 'swipe-left');
+                showNextFilm();
+            }, 500);
+        }
+
+        function showNextFilm() {
+            currentFilmIndex++;
+            
+            if (currentFilmIndex >= films.length) {
+                // Все фильмы просмотрены
+                document.getElementById('swipeSection').innerHTML = `
+                    <div class="films-ended">
+                        <h3>Фильмдер аяқталды!</h3>
+                        <p>Сіз барлық ұсынылған фильмдерді қарап шықтыңыз.</p>
+                        <button class="back-to-genres-btn" id="backToGenresBtn">Жанрларды қайта таңдау</button>
+                    </div>
+                `;
+                
+                document.getElementById('backToGenresBtn').addEventListener('click', function() {
+                    document.getElementById('swipeSection').style.display = 'none';
+                    document.getElementById('genreSection').style.display = 'block';
+                    currentFilmIndex = 0;
+                });
+                return;
+            }
+            
+            const film = films[currentFilmIndex];
+            console.log("Текущий фильм:", film);
+            const card = document.getElementById('currentFilmCard');
+            
+            card.style.backgroundImage = `url(https://image.tmdb.org/t/p/w500${film.poster_path})`;
+            document.getElementById('filmTitle').textContent = film.title;
+            document.getElementById('filmYear').textContent = film.release_date ? film.release_date.split('-')[0] : 'Жыл белгісіз';
+            document.getElementById('filmRating').textContent = `⭐ ${film.vote_average ? film.vote_average.toFixed(1) : '?'}`;
+            
+            card.style.transform = '';
+            card.style.opacity = '1';
+        }
+
+        function showMatchNotification(film) {
+            const notification = document.getElementById('matchNotification');
+            document.getElementById('matchFilmTitle').textContent = film.title;
+            document.getElementById('matchedFilmPoster').style.backgroundImage = 
+                `url(https://image.tmdb.org/t/p/w500${film.poster_path})`;
+            
+            notification.style.display = 'block';
+            
+            // Запускаем конфетти
+            const confettiElements = document.querySelectorAll('.confetti');
+            confettiElements.forEach(el => {
+                el.style.animation = 'confetti 4s ease-out forwards';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 4000);
+            });
+        }
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log("Received message:", data);
+
+            switch (data.type) {
+                case 'room_status':
+                    // Обновляем статус комнаты
+                    if (data.usersCount === 1) {
+                        // Ждем второго пользователя
+                        document.getElementById('inviteSection').style.display = 'block';
+                        document.getElementById('waitingSection').style.display = 'block';
+                        document.getElementById('genreSection').style.display = 'none';
+                        document.getElementById('swipeSection').style.display = 'none';
+                    } else if (data.usersCount === 2) {
+                        // Оба пользователя подключены - показываем выбор жанров
+                        document.getElementById('inviteSection').style.display = 'none';
+                        document.getElementById('waitingSection').style.display = 'none';
+                        document.getElementById('genreSection').style.display = 'block';
+                        document.getElementById('swipeSection').style.display = 'none';
+                    }
+                    break;
+
+                case 'both_selected':
+                    // When both users selected genres
+                    document.getElementById('genreSection').style.display = 'none';
+                    document.getElementById('swipeSection').style.display = 'flex';
+                    
+                    if (data.data && data.data.length > 0) {
+                        films = data.data;
+                        currentFilmIndex = 0;
+                        showNextFilm();
+                    }
+                    break;
+
+                case 'films_list':
+                    // Received films to swipe
+                    films = data.data;
+                    if (films.length > 0) {
+                        currentFilmIndex = 0;
+                        showNextFilm();
+                    }
+                    break;
+
+                case 'match':
+                    const matchedFilm = films.find(f => f.id === data.filmId);
+                    if (matchedFilm) {
+                        showMatchNotification(matchedFilm);
+                    }
+                    break;
+            }
+        };
+
+        socket.onopen = function() {
+            socket.send(JSON.stringify({
+                type: 'get_room_status'
+            }));
+        };
+
+        // Инициализация - скрываем свайп-секцию по умолчанию
+        document.addEventListener('DOMContentLoaded', function() {
+            // Получаем жанры, переданные с сервера
+            const savedGenres = JSON.parse('{{ .SelectedGenres | json }}') || [];
+            
+            // Отмечаем кнопки жанров
+            savedGenres.forEach(genreId => {
+                const btn = document.querySelector(`.genre-btn[data-genre="${genreId}"]`);
+                if (btn) {
+                    btn.classList.add('selected');
+                    selectedGenres.push(genreId);  // Восстанавливаем массив
+                }
+            });
+
+            // Если жанры уже выбраны, скрываем блок выбора
+            if (savedGenres.length > 0) {
+                document.getElementById('genreSection').style.display = 'none';
+                document.getElementById('swipeSection').style.display = 'flex';
+            }
+            document.getElementById('swipeSection').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

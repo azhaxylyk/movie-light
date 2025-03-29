@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"html/template"
 	"log"
 	"movie-light/internal/config"
@@ -43,6 +44,22 @@ func main() {
 		"toString": func(i int) string {
 			return strconv.Itoa(i)
 		},
+		"truncate": func(s string, length int) string {
+			if len(s) <= length {
+				return s
+			}
+			return s[:length] + "..."
+		},
+		"formatYear": func(date string) string {
+			if len(date) >= 4 {
+				return date[:4]
+			}
+			return date
+		},
+		"json": func(v interface{}) string {
+			a, _ := json.Marshal(v)
+			return string(a)
+		},
 	})
 	r.LoadHTMLGlob("web/templates/*")
 	r.Static("/static", "web/static")
@@ -74,6 +91,13 @@ func main() {
 		}
 		c.JSON(http.StatusOK, movies)
 	})
+
+	// Добавьте после других маршрутов
+	r.GET("/room/create", handlers.CreateRoom) // Показывает страницу с формой
+	r.POST("/room/new", handlers.CreateNewRoom)
+	r.GET("/room/:id", handlers.RoomPage)
+	r.GET("/ws/room/:id", handlers.HandleRoomWebSocket)
+
 	// Добавьте этот маршрут перед authGroup
 	r.GET("/search", handlers.SearchHandler)
 	// Защищенные маршруты (требуют авторизации)
