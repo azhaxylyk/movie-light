@@ -98,6 +98,9 @@ func main() {
 	r.GET("/room/:id", handlers.RoomPage)
 	r.GET("/ws/room/:id", handlers.HandleRoomWebSocket)
 
+	r.GET("/watch/:roomID", handlers.WatchRoomPage)
+	r.GET("/ws/watch/:id", handlers.HandleWatchWebSocket)
+
 	// Добавьте этот маршрут перед authGroup
 	r.GET("/search", handlers.SearchHandler)
 	// Защищенные маршруты (требуют авторизации)

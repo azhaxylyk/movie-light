@@ -2,6 +2,7 @@ package config
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -36,4 +37,7 @@ func LoadEnv() {
 	if err := scanner.Err(); err != nil {
 		log.Println("Error reading .env file:", err)
 	}
+	fmt.Println("API_KEY:", os.Getenv("API_KEY"))
+	fmt.Println("YOU_TUBE_API_KEY:", os.Getenv("YOU_TUBE_API_KEY"))
+
 }

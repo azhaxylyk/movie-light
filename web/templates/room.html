@@ -99,6 +99,7 @@
                 <h3 id="matchFilmTitle">Фильм атауы</h3>
                 <p class="match-message">Екеуіңіз де бұл фильмді ұнаттыңыз!</p>
                 <button class="close-match-btn" id="closeMatchBtn">Жабу</button>
+                <button class="watch-together-btn" id="watchTogetherBtn">Бірге көру</button>
             </div>
         </div>
     </div>
@@ -128,6 +129,10 @@
         // Закрытие уведомления о совпадении
         document.getElementById('closeMatchBtn').addEventListener('click', function() {
             document.getElementById('matchNotification').style.display = 'none';
+        });
+        document.getElementById('watchTogetherBtn').addEventListener('click', function() {
+            const matchedFilmId = this.dataset.filmId; // Получаем ID фильма из data-атрибута
+            window.location.href = `/watch/{{ .RoomID }}?movie_id=${matchedFilmId}`;
         });
 
         // Обработчики кнопок жанров
@@ -227,22 +232,25 @@
         }
 
         function showMatchNotification(film) {
-            // Запускаем фейерверки
+            // Устанавливаем ID фильма в кнопку
+            document.getElementById('watchTogetherBtn').dataset.filmId = film.id;
+            
+            // Остальной код функции остается без изменений
             const canvas = document.getElementById('fireworksCanvas');
-            console.log("Canvas найден?", canvas);
             const fireworks = new Fireworks(canvas, {
                 autoresize: true,
                 opacity: 0.8,
                 acceleration: 1.05,
                 friction: 0.97,
                 gravity: 1.5,
-                particles: 200,  // Увеличим количество частиц
-                traceLength: 10,  // Увеличим длину следов
-                explosion: 8,     // Увеличим силу взрыва
-                intensity: 50,    // Увеличим интенсивность
-                flickering: 75,   // Добавим мерцание
+                particles: 200,
+                traceLength: 10,
+                explosion: 8,
+                intensity: 50,
+                flickering: 75,
             });
             fireworks.start();
+            
             const notification = document.getElementById('matchNotification');
             document.getElementById('matchFilmTitle').textContent = film.title;
             document.getElementById('matchedFilmPoster').style.backgroundImage = 
@@ -250,9 +258,6 @@
             
             notification.style.display = 'flex';
             
-            
-            
-            // Остановить через 5 секунд
             setTimeout(() => fireworks.stop(), 10000);
         }
 

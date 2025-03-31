@@ -17,8 +17,13 @@ type WSMessage struct {
 	Genres     []int       `json:"genres,omitempty"` // Изменено с Genre на Genres
 	Message    string      `json:"message,omitempty"`
 	FilmTitle  string      `json:"filmTitle,omitempty"`
-	Data       interface{} `json:"data,omitempty"`
+	MovieID    int         `json:"movieID,omitempty"`
+	VideoId    string      `json:"videoId,omitempty"`
 	UsersCount int         `json:"usersCount,omitempty"`
+	Source     string      `json:"source,omitempty"`
+	Username   string      `json:"username,omitempty"`
+	Text       string      `json:"text,omitempty"`
+	Data       interface{} `json:"data,omitempty"`
 }
 
 // Room представляет комнату для совместного просмотра

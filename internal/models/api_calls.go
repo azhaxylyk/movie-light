@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -11,11 +12,18 @@ import (
 )
 
 var apiKey string
+var YouTubeAPIKey string
+
+const baseURL = "https://api.themoviedb.org/3/"
 
 func InitAPI() {
 	apiKey = os.Getenv("API_KEY")
 	if apiKey == "" {
 		log.Fatal("API_KEY не найден в переменных окружения")
+	}
+	YouTubeAPIKey = os.Getenv("YOU_TUBE_API_KEY")
+	if YouTubeAPIKey == "" {
+		log.Fatal("YouTubeAPIKey не найден в переменных окружения")
 	}
 }
 
@@ -229,4 +237,41 @@ func GetGenreFilms(genres []int) ([]Movie, error) {
 	}
 
 	return data.Results, nil
+}
+func GetMovieTrailer(movieID int) (string, error) {
+	var trailerData struct {
+		Results []struct {
+			Key  string `json:"key"`
+			Type string `json:"type"`
+			Site string `json:"site"`
+		} `json:"results"`
+	}
+
+	endpoint := fmt.Sprintf("%smovie/%d/videos?api_key=%s", baseURL, movieID, apiKey)
+	resp, err := http.Get(endpoint)
+	if err != nil {
+		return "", fmt.Errorf("ошибка запроса к TMDB API: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("TMDB API вернул статус %d", resp.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("ошибка чтения ответа: %v", err)
+	}
+
+	if err := json.Unmarshal(body, &trailerData); err != nil {
+		return "", fmt.Errorf("ошибка парсинга JSON: %v", err)
+	}
+
+	for _, video := range trailerData.Results {
+		if video.Type == "Trailer" && video.Site == "YouTube" {
+			return fmt.Sprintf("https://www.youtube.com/watch?v=%s", video.Key), nil
+		}
+	}
+
+	return "", fmt.Errorf("трейлер для фильма с ID %d не найден", movieID)
 }
