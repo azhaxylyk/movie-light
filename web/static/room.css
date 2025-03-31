@@ -81,7 +81,7 @@ body {
     max-width: 1200px;
     margin: 2rem auto;
     gap: 2rem;
-    padding: 0 20px;
+    padding: 70px 20px 20px;
 }
   
   /* Partner Info */
@@ -329,42 +329,54 @@ h3 {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.9);
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 2000;
     overflow: hidden;
 }
   
 .match-content {
-    background-color: var(--white);
-    padding: 2rem;
-    border-radius: 15px;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    padding: 2.5rem;
+    border-radius: 20px;
     text-align: center;
-    position: relative;
+    position: absolute; /* Заменяем relative на absolute */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Центрирование */
     z-index: 2;
-    max-width: 90%;
-    width: 400px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
+
 .match-content h2 {
-    color: var(--primary-color);
-    font-size: 2rem;
+    color: #fff;
+    font-size: 2.5rem;
     margin-bottom: 1.5rem;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .matched-film-card {
-    margin: 1rem 0;
+    margin: 1.5rem 0;
+    color: #fff;
 }
 
 .matched-film-poster {
     width: 100%;
+    max-width: 250px;
     height: 300px;
     background-size: cover;
     background-position: center;
-    border-radius: 10px;
-    margin-bottom: 1rem;
+    border-radius: 15px;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border: 3px solid rgba(255, 255, 255, 0.2);
 }
 
 .match-message {
@@ -373,18 +385,22 @@ h3 {
 }
 
 .close-match-btn {
-    background-color: var(--primary-color);
-    color: var(--white);
+    background: linear-gradient(to right, #FF416C, #FF4B2B);
+    color: white;
     border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 5px;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
     cursor: pointer;
-    font-weight: 500;
-    transition: var(--transition);
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
 }
 
 .close-match-btn:hover {
-    background-color: #ff6b81;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 75, 43, 0.6);
 }
 
 /* Confetti Animation */
@@ -426,6 +442,8 @@ h3 {
     top: 70%;
     left: 60%;
 }
+
+
 
 @keyframes confetti {
     0% {
@@ -510,4 +528,13 @@ h3 {
       transform: translateX(-200px) rotate(-20deg);
       opacity: 0;
     }
+}
+
+#fireworksCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
 }

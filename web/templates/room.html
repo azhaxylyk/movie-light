@@ -46,7 +46,7 @@
             <!-- Секция выбора жанров -->
             <div class="genre-section" id="genreSection">
                 <div class="partner-info">
-                    <h3>{{ if .IsCreator }}{{ .OtherUser }}{{ else }}{{ .OtherUser }}{{ end }} бірге фильм іздейсіз!</h3>
+                    <h3>{{ .OtherUser }}-мен бірге фильм іздеңіз!</h3>
                     <p>Бірге ұнайтын фильмді табыңыз</p>
                 </div>
                 <h3>Фильм жанрын таңдаңыз</h3>
@@ -85,14 +85,13 @@
             </div>
         </div>
     </div>
-
+    <script type="module">
+        import { Fireworks } from 'https://cdn.jsdelivr.net/npm/fireworks-js@2/+esm';
+        window.Fireworks = Fireworks;
+    </script>    
     <!-- Уведомление о совпадении -->
     <div class="match-notification" id="matchNotification">
-        <div class="confetti"></div>
-        <div class="confetti"></div>
-        <div class="confetti"></div>
-        <div class="confetti"></div>
-        <div class="confetti"></div>
+        <canvas id="fireworksCanvas"></canvas>
         <div class="match-content">
             <h2>Сәйкестік!!!</h2>
             <div class="matched-film-card">
@@ -159,7 +158,6 @@
                 genres: numericGenres
             }));
             
-            document.getElementById('genreSection').style.display = 'none';
             document.getElementById('swipeSection').style.display = 'flex';
         });
 
@@ -229,21 +227,33 @@
         }
 
         function showMatchNotification(film) {
+            // Запускаем фейерверки
+            const canvas = document.getElementById('fireworksCanvas');
+            console.log("Canvas найден?", canvas);
+            const fireworks = new Fireworks(canvas, {
+                autoresize: true,
+                opacity: 0.8,
+                acceleration: 1.05,
+                friction: 0.97,
+                gravity: 1.5,
+                particles: 200,  // Увеличим количество частиц
+                traceLength: 10,  // Увеличим длину следов
+                explosion: 8,     // Увеличим силу взрыва
+                intensity: 50,    // Увеличим интенсивность
+                flickering: 75,   // Добавим мерцание
+            });
+            fireworks.start();
             const notification = document.getElementById('matchNotification');
             document.getElementById('matchFilmTitle').textContent = film.title;
             document.getElementById('matchedFilmPoster').style.backgroundImage = 
                 `url(https://image.tmdb.org/t/p/w500${film.poster_path})`;
             
-            notification.style.display = 'block';
+            notification.style.display = 'flex';
             
-            // Запускаем конфетти
-            const confettiElements = document.querySelectorAll('.confetti');
-            confettiElements.forEach(el => {
-                el.style.animation = 'confetti 4s ease-out forwards';
-                setTimeout(() => {
-                    el.style.animation = '';
-                }, 4000);
-            });
+            
+            
+            // Остановить через 5 секунд
+            setTimeout(() => fireworks.stop(), 10000);
         }
 
         socket.onmessage = function(event) {
@@ -269,8 +279,6 @@
                     break;
 
                 case 'both_selected':
-                    // When both users selected genres
-                    document.getElementById('genreSection').style.display = 'none';
                     document.getElementById('swipeSection').style.display = 'flex';
                     
                     if (data.data && data.data.length > 0) {
@@ -320,7 +328,6 @@
 
             // Если жанры уже выбраны, скрываем блок выбора
             if (savedGenres.length > 0) {
-                document.getElementById('genreSection').style.display = 'none';
                 document.getElementById('swipeSection').style.display = 'flex';
             }
             document.getElementById('swipeSection').style.display = 'none';

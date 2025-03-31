@@ -6,7 +6,7 @@
     <title>{{ .Movie.Title }} - Movie Light</title>
     <link rel="stylesheet" href="/static/movie.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="/static/swiper-bundle.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <script>
@@ -178,7 +178,20 @@
                     <div class="discussion">
                         <p class="discussion-content">{{ .Discussion }}</p>
                         <p class="discussion-meta">Бастаған: {{ .Username }}, {{ .CreatedAt }} күні</p>
-                        
+                    
+                        <!-- Кнопка "Ответить" -->
+                        <button class="reply-button" onclick="toggleReplyForm('{{ .ID }}')">
+                            <i class="fas fa-reply"></i>
+                        </button>
+
+                        <!-- Форма ответа (скрытая по умолчанию) -->
+                        <div id="reply-form-{{ .ID }}" class="reply-form">
+                            <textarea id="reply-text-{{ .ID }}" placeholder="Жауабыңызды жазыңыз..." class="reply-textarea"></textarea>
+                            <button class="submit-reply-button" onclick="submitReply('{{ .ID }}', '{{ .MovieID }}')">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    
                         <!-- Рекурсивно выводим ответы -->
                         {{ if .Replies }}
                             <div class="replies" style="margin-left: 30px;">
@@ -186,6 +199,7 @@
                             </div>
                         {{ end }}
                     </div>
+                
                 {{ end }}
             {{ else }}
                 <p>Әзірге тартыстар жоқ.</p>
@@ -243,39 +257,44 @@
             </p>
         </div>
     </footer>
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="/static/swiper-bundle.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Карусель актеров
-            new Swiper('.cast-swiper', {
-                slidesPerView: 5,
-                spaceBetween: 10,
-                navigation: {
-                    nextEl: '.cast-swiper .swiper-button-next',
-                    prevEl: '.cast-swiper .swiper-button-prev',
-                },
-                breakpoints: {
-                    320: { slidesPerView: 2 },
-                    768: { slidesPerView: 3 },
-                    1024: { slidesPerView: 4 },
-                    1440: { slidesPerView: 5 }
-                }
-            });
-
-            // Карусель похожих фильмов
-            new Swiper('.similar-swiper', {
-                slidesPerView: 4,
-                spaceBetween: 10,
-                navigation: {
-                    nextEl: '.similar-swiper .swiper-button-next',
-                    prevEl: '.similar-swiper .swiper-button-prev',
-                },
-                breakpoints: {
-                    320: { slidesPerView: 2 },
-                    768: { slidesPerView: 3 },
-                    1024: { slidesPerView: 4 }
-                }
-            });
+            // Check if Swiper is loaded before initialization
+            if (typeof Swiper !== 'undefined') {
+                // Initialize your Swipers here
+                new Swiper('.cast-swiper', {
+                    slidesPerView: 5,
+                    spaceBetween: 10,
+                    navigation: {
+                        nextEl: '.cast-swiper .swiper-button-next',
+                        prevEl: '.cast-swiper .swiper-button-prev',
+                    },
+                    breakpoints: {
+                        320: { slidesPerView: 2 },
+                        768: { slidesPerView: 3 },
+                        1024: { slidesPerView: 4 },
+                        1440: { slidesPerView: 5 }
+                    }
+                });
+                
+                new Swiper('.similar-swiper', {
+                    slidesPerView: 4,
+                    spaceBetween: 10,
+                    navigation: {
+                        nextEl: '.similar-swiper .swiper-button-next',
+                        prevEl: '.similar-swiper .swiper-button-prev',
+                    },
+                    breakpoints: {
+                        320: { slidesPerView: 2 },
+                        768: { slidesPerView: 3 },
+                        1024: { slidesPerView: 4 }
+                    }
+                });
+            } else {
+                console.error('Swiper library failed to load');
+                // Fallback behavior or alert to the user
+            }
         });
         function submitReview(e) {
             e.preventDefault();
@@ -323,6 +342,31 @@
                 console.error('Error:', error);
                 alert('Жіберу кезінде қате орын алды');
             });
+        }
+        function toggleReplyForm(discussionId) {
+            let form = document.getElementById("reply-form-" + discussionId);
+            form.style.display = form.style.display === "none" ? "block" : "none";
+        }
+
+        async function submitReply(parentId, movieId) {
+            let replyText = document.getElementById("reply-text-" + parentId).value;
+            if (!replyText.trim()) return;
+
+            let formData = new FormData();
+            formData.append("movie_id", movieId);
+            formData.append("discussion", replyText);
+            formData.append("parent_id", parentId);
+
+            let response = await fetch("/add-discussion", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.ok) {
+                location.reload(); // Обновляем страницу после успешного ответа
+            } else {
+                alert("Қате пайда болды!");
+            }
         }
     </script>
 </body>

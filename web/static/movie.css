@@ -324,6 +324,7 @@ h1 a:hover {
 }
 
 .social-section {
+    max-width: 1200px;
     margin-top: 30px;
     padding: 20px;
     background-color: #fff;
@@ -331,7 +332,6 @@ h1 a:hover {
 }
 
 .tabs {
-    display: flex;
     border-bottom: 2px solid #ddd;
 }
 
@@ -624,4 +624,79 @@ h1 a:hover {
     padding: 15px;
     border-radius: 4px;
     margin-bottom: 20px;
+}
+
+/* Стили для кнопки "Ответить" */
+.discussion button[onclick^="toggleReplyForm"] {
+    background-color: #4a6fa5;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.discussion button[onclick^="toggleReplyForm"]:hover {
+    background-color: #3a5a8a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Стили для формы ответа */
+.discussion .reply-form {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #4a6fa5;
+}
+
+.discussion .reply-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 80px;
+    font-family: 'Roboto', sans-serif;
+    resize: vertical;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+}
+
+.discussion .reply-form textarea:focus {
+    border-color: #4a6fa5;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+}
+
+.discussion .reply-form button[onclick^="submitReply"] {
+    background-color: #4a6fa5;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.discussion .reply-form button[onclick^="submitReply"]:hover {
+    background-color: #3a5a8a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.reply-form {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
