@@ -70,8 +70,11 @@
             <p class="movie-tagline">{{ .Movie.Tagline }}</p>
             <p class="movie-overview">{{ .Movie.Overview }}</p>
             <div class="movie-actions">
-                <button>Трейлерді көру</button>
-                <button>Ұнады</button>
+                <button id="like-btn" class="{{if .IsFavorite}}liked{{end}}" 
+                        {{if not .LoggedIn}}disabled title="Ұнату үшін жүйеге кіріңіз"{{end}}>
+                    <i class="far fa-heart"></i>
+                </button>
+                <span id="like-count">{{ .FavoriteCount }}</span>
             </div>
         </div>
     </main>
@@ -260,6 +263,9 @@
     <script src="/static/swiper-bundle.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            const likeBtn = document.getElementById('like-btn');
+            const likeCount = document.getElementById('like-count');
+        
             // Check if Swiper is loaded before initialization
             if (typeof Swiper !== 'undefined') {
                 // Initialize your Swipers here
@@ -294,6 +300,37 @@
             } else {
                 console.error('Swiper library failed to load');
                 // Fallback behavior or alert to the user
+            }
+
+            if (likeBtn) {
+                likeBtn.addEventListener('click', function() {
+                    const movieId = '{{ .Movie.ID }}';
+                    const isLiked = this.classList.contains('liked');
+                    
+                    fetch('/favorites', {
+                        method: isLiked ? 'DELETE' : 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ movie_id: movieId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.classList.toggle('liked');
+                            likeCount.textContent = data.count;
+                            
+                            // Меняем иконку
+                            const icon = this.querySelector('i');
+                            if (this.classList.contains('liked')) {
+                                icon.classList.replace('far', 'fas');
+                            } else {
+                                icon.classList.replace('fas', 'far');
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
             }
         });
         function submitReview(e) {

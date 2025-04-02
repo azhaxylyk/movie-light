@@ -14,6 +14,8 @@ func MovieDetailPage(c *gin.Context) {
 	loggedIn := false
 	var username string
 	userHasReviewed := false
+	var isFavorite bool
+	var favoriteCount int
 	movieID := c.Param("id")
 	if err == nil && sessionToken != "" {
 		// Проверяем валидность токена
@@ -23,8 +25,18 @@ func MovieDetailPage(c *gin.Context) {
 			username = usernameFromDB
 			if loggedIn {
 				userHasReviewed = models.HasUserReviewedMovie(userID, movieID)
+				isFavorite, err = models.IsMovieInFavorites(userID, movieID)
+				if err != nil {
+					log.Printf("Ошибка проверки избранного: %v", err)
+				}
 			}
 		}
+	}
+
+	favoriteCount, err = models.GetFavoriteCount(movieID)
+	if err != nil {
+		log.Printf("Ошибка получения количества лайков: %v", err)
+		favoriteCount = 0
 	}
 
 	// Получаем данные о фильме с актерами
@@ -68,5 +80,57 @@ func MovieDetailPage(c *gin.Context) {
 		"LoggedIn":        loggedIn,
 		"UserHasReviewed": userHasReviewed, // Передаем информацию о том, авторизован ли пользователь
 		"Username":        username,
+		"IsFavorite":      isFavorite,
+		"FavoriteCount":   favoriteCount,
+	})
+}
+
+// Добавление/удаление из избранного
+func HandleFavorites(c *gin.Context) {
+	sessionToken, err := c.Cookie("session_token")
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Требуется авторизация"})
+		return
+	}
+
+	userID, _, err := models.GetIDBySessionToken(sessionToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Неверная сессия"})
+		return
+	}
+
+	var request struct {
+		MovieID string `json:"movie_id"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный запрос"})
+		return
+	}
+
+	// Для POST - добавление, для DELETE - удаление
+	var success bool
+	if c.Request.Method == "POST" {
+		err = models.AddToFavorites(userID, request.MovieID)
+		success = err == nil
+	} else {
+		err = models.RemoveFromFavorites(userID, request.MovieID)
+		success = err == nil
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервера"})
+		return
+	}
+
+	// Получаем обновленное количество лайков
+	count, err := models.GetFavoriteCount(request.MovieID)
+	if err != nil {
+		count = 0
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": success,
+		"count":   count,
 	})
 }

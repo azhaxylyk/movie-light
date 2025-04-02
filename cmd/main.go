@@ -79,6 +79,10 @@ func main() {
 	r.GET("/", handlers.HomePage)
 	r.GET("/movie/:id", handlers.MovieDetailPage)
 
+	// Избранное
+	r.POST("/favorites", handlers.HandleFavorites)
+	r.DELETE("/favorites", handlers.HandleFavorites)
+
 	r.POST("/add-discussion", handlers.AddDiscussion)
 	r.POST("/add-review", handlers.AddReview)
 
