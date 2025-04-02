@@ -4,257 +4,362 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Фильмді бірге көру</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --dark-bg: #1c1c1c;
+            --white: #ffffff;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333333;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
         body {
             font-family: 'Roboto', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
             margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
+            padding-top: 80px;
         }
+        
         .header {
-            background-color: #2c3e50;
-            color: white;
+            width: 100%;
+            background-color: var(--dark-bg);
             padding: 15px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+        
         .header-container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
         }
+        
+        .logo {
+            font-size: 30px;
+            color: var(--white);
+            font-weight: 700;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+        
+        .logo:hover {
+            opacity: 0.8;
+        }
+        
         .exit-btn {
-            background-color: #e74c3c;
-            color: white;
+            background-color: #dc3545;
+            color: var(--white);
             border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
             cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        #waiting {
+        
+        .exit-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .main-container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 40px auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        
+        .video-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .video-container:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        #youtube-iframe {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border: none;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+        
+        .video-title {
+            padding: 20px;
+            font-size: 24px;
+            color: var(--dark-gray);
+            margin: 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .chat-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 80vh;
-            font-size: 24px;
-            text-align: center;
+            height: calc(100vh - 160px);
         }
-        #video-container {
-            display: none;
-            position: relative;
-            max-width: 1200px;
-            margin: 20px auto;
+        
+        .chat-header {
             padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 24px;
+            color: var(--dark-gray);
+            margin: 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        #player {
-            width: 100%;
-            height: 600px;
-            position: relative;
-            margin-bottom: 20px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
+        
+        .chat-header i {
+            color: var(--primary-color);
         }
-        #player iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 0, 0, 0.1);
-            border-top-color: #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 20px 0;
+        
+        .message {
+            background: #f9f9f9;
+            padding: 12px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
         }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        
+        .message.self {
+            align-self: flex-end;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-bottom-right-radius: 5px;
         }
-        .chat-container {
-            margin-top: 20px;
+        
+        .message.other {
+            align-self: flex-start;
+            background-color: #f0f0f0;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-username {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .message-text {
+            margin: 0;
+            line-height: 1.4;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            padding: 15px;
             border-top: 1px solid #eee;
-            padding-top: 20px;
+            gap: 10px;
         }
-        .play-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 100;
-            padding: 15px 30px;
-            background: #e74c3c;
-            color: white;
+        
+        #chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+        
+        #chat-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+        
+        #send-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
             border: none;
-            border-radius: 5px;
+            padding: 0 20px;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 18px;
+            font-size: 16px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #send-btn:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 992px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-container {
+                height: auto;
+                max-height: 500px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .main-container {
+                margin-top: 120px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
+    <header class="header">
         <div class="header-container">
-            <h1><a href="/" style="color: white; text-decoration: none;">Movie Light</a></h1>
+            <h1><a href="/" class="logo">Movie Light</a></h1>
             <button class="exit-btn" id="exitBtn">
                 <i class="fas fa-sign-out-alt"></i> Шығу
             </button>
         </div>
-    </div>
+    </header>
 
-    <div id="waiting">
-        <p>Досыңызды күтіп жатырмыз...</p>
-        <div class="spinner"></div>
-        <p id="connection-status">Комнатаға қосылу...</p>
-    </div>
-
-    <div id="video-container">
-        <h2>{{ .MovieTitle }}</h2>
-        <div id="player"></div>
+    <main class="main-container">
+        <div class="video-container">
+            <h2 class="video-title">{{.MovieTitle}}</h2>
+            <iframe id="youtube-iframe" 
+                    frameborder="0" 
+                    allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+            </iframe>
+        </div>
         
         <div class="chat-container">
-            <h3>Чат</h3>
-            <div id="chat-messages" style="height: 200px; overflow-y: auto; margin-bottom: 10px; border: 1px solid #ddd; padding: 10px;"></div>
-            <input type="text" id="chat-input" placeholder="Хабарлама жазу..." style="width: 80%; padding: 8px;">
-            <button id="send-chat-btn" style="padding: 8px 15px;">Жіберу</button>
+            <h3 class="chat-header"><i class="fas fa-comments"></i> Чат</h3>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-container">
+                <input type="text" id="chat-input" placeholder="Хабарлама жазу...">
+                <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+            </div>
         </div>
-    </div>
+    </main>
 
-    <!-- YouTube IFrame API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
-    
     <script>
+        // Инициализация WebSocket соединения
         let socket;
-        let player;
-        const movieId = new URLSearchParams(window.location.search).get('movie_id');
-        const movieTitle = "{{ .MovieTitle }}";
         
-        function initWebSocket() {
+        function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            const wsUrl = `${protocol}${window.location.host}/ws/watch/{{ .RoomID }}`;
-            socket = new WebSocket(wsUrl);
+            socket = new WebSocket(`${protocol}${window.location.host}/ws/watch/{{.RoomID}}`);
 
             socket.onopen = function() {
-                document.getElementById('connection-status').textContent = 'Комнатаға қосылды. Досыңызды күтіңіз...';
-                
+                console.log('WebSocket connected');
+                // Запрашиваем трейлер при подключении
+                const movieId = new URLSearchParams(window.location.search).get('movie_id');
                 if (movieId) {
                     socket.send(JSON.stringify({
                         type: 'request_trailer',
-                        movieID: parseInt(movieId)
+                        movieID: movieId
                     }));
                 }
             };
 
             socket.onclose = function() {
-                document.getElementById('connection-status').textContent = 'Қосылым үзілді. Қайта қосылу...';
-                setTimeout(initWebSocket, 3000);
+                console.log('WebSocket disconnected, reconnecting...');
+                setTimeout(connectWebSocket, 3000);
             };
 
             socket.onerror = function(error) {
                 console.error('WebSocket error:', error);
-                document.getElementById('connection-status').textContent = 'Қосылым қатесі. Қайта қосылу...';
-                document.getElementById('waiting').style.backgroundColor = '#ffe6e6';
             };
 
             socket.onmessage = function(event) {
-                const message = JSON.parse(event.data);
-                console.log("Получено сообщение:", message);
-
-                if (message.type === 'room_status') {
-                    console.log("Ағымдағы пайдаланушылар саны:", message.usersCount);
-                    if (message.usersCount === 2) {
-                        document.getElementById('waiting').style.display = 'none';
-                        document.getElementById('video-container').style.display = 'block';
-                        setTimeout(() => {
-                            const container = document.getElementById('player');
-                            container.style.height = '600px';
-                            if (player) player.setSize('100%', '100%');
-                        }, 100);
+                try {
+                    const message = JSON.parse(event.data);
+                    console.log('Received message:', message);
+                    
+                    if (message.type === 'movie_trailer' && message.videoId) {
+                        loadYouTubeVideo(message.videoId);
                     }
-                }
-                
-                if (message.type === 'movie_trailer') {
-                    loadYouTubeVideo(message.videoId);
-                }
-                
-                if (message.type === 'chat_message') {
-                    const chatMessages = document.getElementById('chat-messages');
-                    chatMessages.innerHTML += `<p><strong>${message.username}:</strong> ${message.text}</p>`;
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    if (message.type === 'chat_message') {
+                        addChatMessage(message.username, message.text, message.isSelf);
+                    }
+                } catch (e) {
+                    console.error('Error processing message:', e);
                 }
             };
         }
 
+        // Загрузка YouTube видео
         function loadYouTubeVideo(videoId) {
-            if (!player) {
-                player = new YT.Player('player', {
-                    height: '100%',
-                    width: '100%',
-                    videoId: videoId,
-                    playerVars: {
-                        'autoplay': 1,
-                        'muted': 1,
-                        'controls': 1,
-                        'rel': 0,
-                        'modestbranding': 1,
-                        'playsinline': 1
-                    },
-                    events: {
-                        'onReady': onPlayerReady,
-                        'onError': onPlayerError,
-                        'onStateChange': onPlayerStateChange
-                    }
-                });
-            } else {
-                player.loadVideoById(videoId);
-                player.unMute();
-            }
-        }
-
-        function onPlayerReady(event) {
-            const playButton = document.createElement('button');
-            playButton.className = 'play-overlay';
-            playButton.textContent = 'Начать просмотр';
-            document.getElementById('player').appendChild(playButton);
+            const iframe = document.getElementById('youtube-iframe');
+            if (!iframe) return;
             
-            playButton.addEventListener('click', () => {
-                event.target.playVideo();
-                event.target.unMute();
-                playButton.remove();
-            });
+            iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&autoplay=1`;
         }
 
-        function onPlayerError(event) {
-            console.error('Ошибка плеера:', event.data);
-            alert('Ошибка загрузки видео. Пожалуйста, обновите страницу.');
+        // Добавление сообщения в чат
+        function addChatMessage(username, text, isSelf) {
+            const chatMessages = document.getElementById('chat-messages');
+            if (!chatMessages) return;
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${isSelf ? 'self' : 'other'}`;
+            messageElement.innerHTML = `
+                <div class="message-username">${username}</div>
+                <p class="message-text">${text}</p>
+            `;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        function onPlayerStateChange(event) {
-            console.log('Состояние плеера:', event.data);
-            if (event.data === YT.PlayerState.PLAYING) {
-                document.getElementById('player').style.opacity = 1;
-            }
-        }
-
-        // Обработчики чата
-        document.getElementById('send-chat-btn').addEventListener('click', sendChatMessage);
+        // Отправка сообщения
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
         document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendChatMessage();
+            if (e.key === 'Enter') sendMessage();
         });
 
-        function sendChatMessage() {
+        function sendMessage() {
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
-            if (message) {
+            
+            if (message && socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                     type: 'chat_message',
                     text: message
@@ -264,13 +369,23 @@
         }
 
         // Выход из комнаты
-        document.getElementById('exitBtn').addEventListener('click', function() {
+        document.getElementById('exitBtn').addEventListener('click', () => {
             if (confirm("Бөлмеден шығуға сенімдісіз бе?")) {
                 window.location.href = "/";
             }
         });
 
-        window.addEventListener('DOMContentLoaded', initWebSocket);
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            connectWebSocket();
+            
+            // Проверка состояния соединения каждые 5 секунд
+            setInterval(() => {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ type: 'ping' }));
+                }
+            }, 5000);
+        });
     </script>
 </body>
 </html>

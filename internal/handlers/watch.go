@@ -5,6 +5,7 @@ import (
 	"movie-light/internal/models"
 	"net/http"
 	"regexp"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -77,14 +78,25 @@ func HandleWatchWebSocket(c *gin.Context) {
 			})
 
 		case "request_trailer":
-			var movieID int
+			var movieIDStr string
+
+			// Обрабатываем разные форматы movieID
 			switch v := msg.MovieID.(type) {
-			case float64:
-				movieID = int(v)
-			case int:
-				movieID = v
+			case float64: // Когда число приходит как float из JSON
+				movieIDStr = strconv.Itoa(int(v))
+			case int: // Когда число приходит как int
+				movieIDStr = strconv.Itoa(v)
+			case string: // Когда приходит строка
+				movieIDStr = v
 			default:
 				log.Printf("Неподдерживаемый тип movieID: %T", msg.MovieID)
+				continue
+			}
+
+			// Преобразуем строку в int, если нужно
+			movieID, err := strconv.Atoi(movieIDStr)
+			if err != nil {
+				log.Printf("Ошибка преобразования movieID в число: %v", err)
 				continue
 			}
 
