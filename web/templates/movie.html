@@ -146,7 +146,14 @@
                     <div>
                         <p class="review-author">{{ .Username }}</p>
                         <div class="review-rating">
-                            <span class="rating-value">⭐ {{ .Rating }}</span>
+                            {{ $rating := .Rating }}
+                            {{ range $i := until 10 }}
+                                {{ if lt $i $rating }}
+                                    <i class="fas fa-star"></i>
+                                {{ else }}
+                                    <i class="far fa-star"></i>
+                                {{ end }}
+                            {{ end }}
                         </div>
                         <p class="review-meta">Автор: <strong>{{ .Username }}</strong>, {{ .CreatedAt }} күні</p>
                     </div>
