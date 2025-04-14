@@ -238,6 +238,7 @@ func GetGenreFilms(genres []int) ([]Movie, error) {
 
 	return data.Results, nil
 }
+
 func GetMovieTrailer(movieID int) (string, error) {
 	var trailerData struct {
 		Results []struct {

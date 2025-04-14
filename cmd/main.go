@@ -86,6 +86,9 @@ func main() {
 	r.POST("/add-discussion", handlers.AddDiscussion)
 	r.POST("/add-review", handlers.AddReview)
 
+	r.GET("/ai", handlers.ChatBotPage)
+	r.POST("/ai/query", handlers.ChatBotHandler)
+
 	r.GET("/trending", func(c *gin.Context) {
 		timeWindow := c.DefaultQuery("timeWindow", "day") // По умолчанию "day"
 		movies, err := models.GetTrendingMovies(timeWindow)
