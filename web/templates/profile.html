@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль</title>
+    <title>Профиль - {{ .Username }}</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/profile.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 </head>
 <body>
     <div class="header">
@@ -20,24 +22,110 @@
             </div>
             <div class="buttons">
                 <a href="/profile" class="button profile-button">
-                    <i class="fas fa-user"></i> {{ .Username }}
+                    <i class="fas fa-user"></i>
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="profile-content">
-        <h1>Профиль</h1>
-        <p>Добро пожаловать, {{ .Username }}!</p>
-
-        <!-- Кнопка выхода -->
-        <form action="/logout" method="POST">
-            <button type="submit" class="logout-button">
-                <i class="fas fa-sign-out-alt"></i> Шығу
-            </button>
-        </form>
-
-        <!-- Здесь позже можно добавить избранные фильмы, отзывы и т.д. -->
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1 class="profile-title">{{ .Username }}, сәлем!</h1>
+            <form action="/logout" method="POST">
+                <button type="submit" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Шығу
+                </button>
+            </form>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="favorites">Таңдаулылар</div>
+            <div class="tab" data-tab="reviews">Пікірлер</div>
+        </div>
+        
+        <div class="tab-content active" id="favorites-tab">
+            <div class="tmdb-favorites-container">
+                <div class="tmdb-favorites-main">
+                    {{ if .Favorites }}
+                        <div class="tmdb-favorites-list">
+                            {{ range .Favorites }}
+                            <div class="tmdb-favorite-item">
+                                <img src="https://image.tmdb.org/t/p/w300{{ .PosterPath }}" alt="{{ .Title }}" class="tmdb-favorite-poster">
+                                <div class="tmdb-favorite-content">
+                                    <div class="tmdb-favorite-header">
+                                        <h2 class="tmdb-favorite-movie-title">{{ .Title }}</h2>
+                                        <div class="tmdb-favorite-rating">
+                                            <i class="fas fa-star"></i>
+                                            <span>{{ .VoteAverage }}/10</span>
+                                        </div>
+                                    </div>
+                                    <p class="tmdb-favorite-release-date">{{ .ReleaseDate }}</p>
+                                    <p class="tmdb-favorite-overview">
+                                        {{ if .Overview }}
+                                            {{ .Overview }}
+                                        {{ else }}
+                                            No overview available
+                                        {{ end }}
+                                    </p>
+                                    
+                                    <div class="tmdb-favorite-actions">
+                                        <form action="/remove-from-favorites" method="POST">
+                                            <input type="hidden" name="movie_id" value="{{ .ID }}">
+                                            <button type="submit" class="tmdb-remove-btn">
+                                                <i class="fas fa-heart-broken"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {{ end }}
+                        </div>
+                    {{ else }}
+                        <div class="tmdb-no-favorites">
+                            <i class="far fa-heart"></i>
+                            <h3>Ұнатулар тізімі бос</h3>
+                            <p>Фильмдерді ұнатуларға қосу үшін олардың бетінде "Ұнады" батырмасын басыңыз</p>
+                        </div>
+                    {{ end }}
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            
+        </style>
+        
+        <div class="tab-content" id="reviews-tab">
+            {{ if .Reviews }}
+                <div class="reviews-list">
+                    {{ range .Reviews }}
+                    <div class="review-item">
+                        <img class="review-poster" src="https://image.tmdb.org/t/p/w200{{ .PosterPath }}" alt="{{ .MovieTitle }}">
+                        <div class="review-text">
+                            <div class="review-movie">{{ .MovieTitle }}</div>
+                            <div class="review-rating">
+                                {{ $rating := .Rating }}
+                                {{ range $i := until 10 }}
+                                    {{ if lt $i $rating }}
+                                        <i class="fas fa-star"></i>
+                                    {{ else }}
+                                        <i class="far fa-star"></i>
+                                    {{ end }}
+                                {{ end }}
+                            </div>
+                            <p>{{ .Review }}</p>
+                        </div>
+                    </div>
+                    {{ end }}
+                </div>
+            {{ else }}
+                <div class="no-items">
+                    <i class="far fa-comment" style="font-size: 50px; margin-bottom: 15px;"></i>
+                    <h3>Пікірлер тізімі бос</h3>
+                    <p>Фильмдерге пікір қалдыру үшін олардың бетінде пікір жазыңыз</p>
+                </div>
+            {{ end }}
+        </div>
     </div>
 
     <footer class="footer">
@@ -49,5 +137,29 @@
             </p>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Табы
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Удаляем активный класс у всех табов
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Добавляем активный класс текущему табу
+                    this.classList.add('active');
+                    
+                    // Скрываем все контенты
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Показываем соответствующий контент
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+        });
+    </script>
 </body>
 </html>

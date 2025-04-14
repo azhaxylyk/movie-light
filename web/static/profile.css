@@ -1,0 +1,368 @@
+.profile-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-title {
+    font-size: 28px;
+    color: #333;
+    margin: 0;
+}
+
+.logout-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px 0;
+}
+
+.tab {
+    padding: 12px 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.3s;
+    border-radius: 5px;
+    margin: 0 10px;
+}
+
+.tab:hover {
+    background: #e9ecef;
+}
+
+.tab.active {
+    background: #007bff;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.tab-content.active {
+    display: block;
+}
+.tmdb-favorites-container {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.tmdb-sidebar {
+    width: 250px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-right: 1px solid #e3e3e3;
+}
+.tmdb-sidebar-section {
+    margin-bottom: 25px;
+}
+.tmdb-sidebar-section h3 {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+}
+.tmdb-sidebar-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tmdb-sidebar-section li {
+    padding: 8px 0;
+    cursor: pointer;
+    color: #235789;
+}
+.tmdb-sidebar-section li.active {
+    font-weight: bold;
+    color: #032541;
+}
+.tmdb-sidebar-section li:hover {
+    color: #032541;
+}
+.tmdb-favorites-main {
+    flex: 1;
+    padding: 20px;
+}
+.tmdb-favorites-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e3e3e3;
+}
+.tmdb-favorites-header h2 {
+    margin: 0 0 10px 0;
+    color: #032541;
+}
+.tmdb-favorites-stats {
+    display: flex;
+    gap: 15px;
+    color: #666;
+    font-size: 14px;
+}
+.tmdb-favorites-stats i {
+    margin-right: 5px;
+}
+.tmdb-favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.tmdb-favorite-item {
+    display: flex;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    min-height: 300px;
+}
+
+.tmdb-favorite-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.tmdb-favorite-poster {
+    width: 200px;
+    height: auto;
+    object-fit: cover;
+}
+
+.tmdb-favorite-content {
+    flex: 1;
+    padding: 25px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.tmdb-favorite-movie-title {
+    font-size: 24px;
+    margin: 0;
+    color: #032541;
+}
+
+.tmdb-favorite-release-date {
+    color: #666;
+    font-size: 14px;
+    margin: 0 0 15px 0;
+}
+
+.tmdb-favorite-overview {
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.tmdb-favorite-overlay {
+    padding: 10px;
+}
+
+.tmdb-favorite-rating {
+    color: #f5c518;
+    font-weight: bold;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+
+.tmdb-favorite-title {
+    font-size: 15px;
+    margin: 5px 0;
+    color: #235789;
+}
+
+.tmdb-favorite-date {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+}
+
+.tmdb-favorite-actions {
+    margin-top: auto;
+    text-align: right;
+}
+
+.tmdb-favorite-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #235789;
+}
+
+.tmdb-favorite-btn:hover {
+    color: #032541;
+}
+
+.tmdb-favorite-btn i {
+    margin-right: 3px;
+}
+
+.tmdb-no-favorites {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.tmdb-no-favorites i {
+    font-size: 50px;
+    color: #d3d3d3;
+    margin-bottom: 15px;
+}
+
+.tmdb-no-favorites h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.tmdb-no-favorites p {
+    margin: 0;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.favorite-item {
+    background: #f9f9f9;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s;
+}
+
+.favorite-item:hover {
+    transform: translateY(-5px);
+}
+
+.favorite-poster {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.favorite-title {
+    padding: 10px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.review-item {
+    display: flex;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+.review-poster {
+    width: 100px;
+    height: auto;
+    border-radius: 8px;
+    margin-right: 15px; /* Отступ между постером и текстом */
+}
+
+.review-text {
+    flex: 1;
+}
+
+.review-movie {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.review-rating i {
+    color: gold;
+}
+
+.no-items {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.tmdb-remove-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tmdb-remove-btn:hover {
+    background-color: #c82333;
+}
+
+.tmdb-remove-btn i {
+    margin-right: 5px;
+}
+
+.tmdb-favorites-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
