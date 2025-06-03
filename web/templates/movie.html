@@ -32,7 +32,13 @@
                 </button>
             </div>
             <div class="buttons">
+                <a href="/ai" class="button profile-button" title="Чат-бот">
+                    <i class="fas fa-robot"></i>
+                </a>
                 {{ if .LoggedIn }}
+                    <a href="/room/create" class="button profile-button">
+                        <i class="fas fa-users"></i>
+                    </a>
                     <!-- Если пользователь авторизован, показываем кнопку профиля -->
                     <a href="/profile" class="button profile-button">
                         <i class="fas fa-user"></i>
@@ -69,6 +75,32 @@
             </div>
             <p class="movie-tagline">{{ .Movie.Tagline }}</p>
             <p class="movie-overview">{{ .Movie.Overview }}</p>
+            <div class="movie-buttons">
+                {{ $movieID := .Movie.ID }}
+                {{ $loggedIn := .LoggedIn }}
+                {{ range .Movie.Videos.Results }}
+                    {{ if and (eq .Site "YouTube") (eq .Type "Trailer") }}
+                        <a href="https://www.youtube.com/watch?v={{ .Key }}" target="_blank" class="trailer-button">
+                            <i class="fas fa-play-circle"></i> Трейлер көру
+                        </a>
+                        <a href="https://www.youtube.com/watch?v={{ .Key }}" target="_blank" class="watch-button">
+                            Фильмді көру <i class="fas fa-film"></i>
+                        </a>
+                        {{ if $loggedIn }}
+                            <a href="/watch/create?movie_id={{ $movieID }}" class="watch-together-button">
+                                <i class="fas fa-users"></i> Бірге көру
+                            </a>
+                        {{ else }}
+                            <a href="/login" class="watch-together-button">
+                                <i class="fas fa-users"></i> Бірге көру
+                            </a>
+                        {{ end }}
+                        {{ break }}
+                    {{ end }}
+                {{ end }}
+            </div>
+
+
             <div class="movie-actions">
                 <button id="like-btn" class="{{if .IsFavorite}}liked{{end}}" 
                         {{if not .LoggedIn}}disabled title="Ұнату үшін жүйеге кіріңіз"{{end}}>
@@ -242,8 +274,10 @@
                 {{ range .SimilarMovies }}
                 <div class="swiper-slide">
                     <div class="movie">
-                        <img src="https://image.tmdb.org/t/p/w500{{ .PosterPath }}" alt="{{ .Title }}">
-                        <h2>{{ .Title }}</h2>
+                        <a href="/movie/{{ .ID }}">
+                            <img src="https://image.tmdb.org/t/p/w500{{ .PosterPath }}" alt="{{ .Title }}">
+                            <h2>{{ .Title }}</h2>
+                        </a>
                         <div class="movie-details">
                             <span class="movie-release-date">{{ .ReleaseDate }}</span>
                             <span class="movie-rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} дауыс)</span>
@@ -258,6 +292,7 @@
             <div class="swiper-button-next"></div>
         </div>
     </section>
+
     <footer class="footer">
         <div class="footer-content">
             <p>Автор: Aknur Z.</p>

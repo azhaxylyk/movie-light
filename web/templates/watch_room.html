@@ -219,7 +219,54 @@
         #send-btn:hover {
             background-color: var(--primary-hover);
         }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .share-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .share-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .share-btn i {
+            font-size: 16px;
+        }
         
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            z-index: 1000;
+            animation: fadeInOut 2s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -253,9 +300,14 @@
     <header class="header">
         <div class="header-container">
             <h1><a href="/" class="logo">Movie Light</a></h1>
-            <button class="exit-btn" id="exitBtn">
-                <i class="fas fa-sign-out-alt"></i> Шығу
-            </button>
+            <div class="header-buttons">
+                <button class="share-btn" id="shareBtn">
+                    <i class="fas fa-share-alt"></i> Бөлісу
+                </button>
+                <button class="exit-btn" id="exitBtn">
+                    <i class="fas fa-sign-out-alt"></i> Шығу
+                </button>
+            </div>
         </div>
     </header>
 
@@ -385,6 +437,28 @@
                     socket.send(JSON.stringify({ type: 'ping' }));
                 }
             }, 5000);
+        });
+
+        // Копирование ссылки комнаты
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            const roomUrl = window.location.href;
+            
+            // Используем современный Clipboard API
+            navigator.clipboard.writeText(roomUrl).then(() => {
+                // Показываем уведомление
+                const notification = document.createElement('div');
+                notification.className = 'copy-notification';
+                notification.textContent = 'Сілтеме көшірілді!';
+                document.body.appendChild(notification);
+                
+                // Удаляем уведомление через 2 секунды
+                setTimeout(() => {
+                    notification.remove();
+                }, 2000);
+            }).catch(err => {
+                console.error('Не удалось скопировать ссылку:', err);
+                alert('Сілтемені көшіру кезінде қате орын алды');
+            });
         });
     </script>
 </body>
