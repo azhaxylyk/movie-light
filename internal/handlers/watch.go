@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"movie-light/internal/models"
 	"net/http"
@@ -142,6 +143,7 @@ func extractYouTubeID(url string) string {
 	}
 	return ""
 }
+
 func WatchRoomPage(c *gin.Context) {
 	sessionToken, err := c.Cookie("session_token")
 	if err != nil {
@@ -168,10 +170,39 @@ func WatchRoomPage(c *gin.Context) {
 		}
 	}
 
+	fullURL := "http://" + c.Request.Host + c.Request.URL.String()
+
 	c.HTML(http.StatusOK, "watch_room.html", gin.H{
 		"RoomID":     roomID,
 		"Username":   username,
 		"MovieID":    movieID,
 		"MovieTitle": movieTitle,
+		"FullURL":    fullURL, // Добавляем полный URL
 	})
+}
+
+func CreateWatchRoom(c *gin.Context) {
+	sessionToken, err := c.Cookie("session_token")
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
+	creatorID, creatorName, err := models.GetIDBySessionToken(sessionToken)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
+	movieID := c.Query("movie_id")
+	if movieID == "" {
+		c.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+
+	// Создаём новую комнату
+	room := models.NewRoom(creatorID, creatorName)
+
+	// Перенаправляем в комнату просмотра фильма с этим roomID и movieID
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/%s?movie_id=%s", room.ID, movieID))
 }

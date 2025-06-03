@@ -106,6 +106,7 @@ func main() {
 	r.GET("/ws/room/:id", handlers.HandleRoomWebSocket)
 
 	r.GET("/watch/:roomID", handlers.WatchRoomPage)
+	r.GET("/watch/create", handlers.CreateWatchRoom)
 	r.GET("/ws/watch/:id", handlers.HandleWatchWebSocket)
 
 	// Добавьте этот маршрут перед authGroup

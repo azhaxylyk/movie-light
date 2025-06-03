@@ -64,6 +64,14 @@ type MovieDetail struct {
 	Tagline          string  `json:"tagline"`
 	Genres           []Genre `json:"genres"`
 	Credits          Credits `json:"credits"`
+	Videos           struct {
+		Results []struct {
+			Key  string
+			Site string
+			Type string
+			Name string
+		}
+	}
 }
 
 // Credits содержит информацию о съемочной группе и актерах
