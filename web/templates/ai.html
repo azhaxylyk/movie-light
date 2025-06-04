@@ -3,90 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Light</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Кино кеңесші</title>
     <link rel="stylesheet" href="/static/ai.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 </head>
 <body>
-    <div class="header">
-        <div class="header-container">
-            <h1><a href="/">Movie Light</a></h1>
-            <div class="search-bar">
-                <input type="text" placeholder="Кино іздеу">
-                <button class="search-button">
-                    <i class="fas fa-search"></i>
+
+    <div class="chat-wrapper animate__animated animate__fadeIn">
+        <div class="chat-header">
+            <a href="/" class="home-link">
+                <i class="fas fa-film"></i>
+                <span>MovieLight</span>
+            </a>
+            <div class="chat-title">
+                <i class="fas fa-robot"></i>
+                <h2>Кино кеңесші</h2>
+            </div>
+            <div class="chat-status">
+                <span class="status-dot"></span>
+                <span>Онлайн</span>
+                <div class="typing-indicator" id="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-container" id="chat-container"></div>
+        
+        <div class="chat-input-area">
+            <div class="input-wrapper">
+                <input type="text" id="user-input" placeholder="Сұрағыңызды жазыңыз..." />
+                <button id="send-button">
+                    <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
-            <div class="buttons">
-                {{ if .LoggedIn }}
-                    <a href="/room/create" class="button profile-button">
-                        <i class="fas fa-users"></i>
-                    </a>
-                    <!-- Если пользователь авторизован, показываем кнопку профиля -->
-                    <a href="/profile" class="button profile-button">
-                        <i class="fas fa-user"></i>
-                    </a>
-                {{ else }}
-                    <!-- Если пользователь не авторизован, показываем кнопки входа и регистрации -->
-                    <a href="/login" class="button login-button">
-                        <i class="fas fa-sign-in-alt"></i>
-                    </a>
-                    <a href="/register" class="button register-button">
-                        <i class="fas fa-user-plus"></i>
-                    </a>
-                {{ end }}
+            <div class="hint-text">
+                <i class="fas fa-lightbulb"></i> Мысалы: "Бүгін комедия көргім келеді."
             </div>
         </div>
     </div>
-
-
-    <div class="chat-wrapper">
-        <div class="chat-container" id="chat-container">
-            <!-- Сообщения будут добавляться сюда -->
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="user-input" placeholder="Сұрағыңызды жазыңыз..." />
-            <button id="send-button"><i class="fas fa-paper-plane"></i></button>
-        </div>
-    </div>
-    
-
 
     <footer class="footer">
         <div class="footer-content">
             <p>Автор: Aknur Z.</p>
             <p>
-                <a href="https://www.linkedin.com/in/azhaxylyk" target="_blank">LinkedIn: azhaxylyk</a> | 
-                <a href="https://github.com/azhaxylyk" target="_blank">GitHub: azhaxylyk</a>
+                <a href="https://www.linkedin.com/in/azhaxylyk" target="_blank">LinkedIn</a> | 
+                <a href="https://github.com/azhaxylyk" target="_blank">GitHub</a>
             </p>
         </div>
     </footer>
 
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script>
+        let currentMovieIndex = 0;
+        let movies = [];
+        const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w200";
+
         document.getElementById("send-button").addEventListener("click", sendMessage);
         document.getElementById("user-input").addEventListener("keypress", function(e) {
             if (e.key === 'Enter') sendMessage();
         });
+
         window.addEventListener("DOMContentLoaded", () => {
-            const welcomeMessage = `Сәлем! 👋 Кино көргің келіп тұр ма? 😊
-        Қалың қалай? Қандай жанрларды ұнатасың: махаббат, қорқынышты, комедия, шытырман оқиға? 
-        Сүйікті фильмің бар ма?`;
+            const welcomeMessage = `Сәлем! 👋 Кино көргің келіп тұр ма? 😊 Қандай жанрларды ұнатасың?`;
 
             addMessage(welcomeMessage, 'bot-message');
+            setTimeout(setupQuickReplies, 1500);
+
+            const input = document.getElementById("user-input");
+            const sendButton = document.getElementById("send-button");
+
+            input.addEventListener("focus", () => sendButton.classList.add("pulse"));
+            input.addEventListener("blur", () => sendButton.classList.remove("pulse"));
         });
 
         async function sendMessage() {
             const input = document.getElementById("user-input");
             const text = input.value.trim();
             if (!text) return;
-        
+
             addMessage(text, 'user-message');
             input.value = "";
-        
+            showTypingIndicator();
+            await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 1000));
+            hideTypingIndicator();
+
+            if (movies.length > 0 && currentMovieIndex < movies.length) {
+                showNextMovie();
+                return;
+            }
+
             try {
                 const response = await fetch('/ai/query', {
                     method: 'POST',
@@ -94,27 +101,98 @@
                     body: JSON.stringify({ query: text })
                 });
                 const data = await response.json();
-        
-                if (data.results) {
-                    data.results.forEach(result => addMessage(result, 'bot-message'));
+
+                if (data.movies && data.movies.length > 0) {
+                    movies = data.movies;
+                    currentMovieIndex = 0;
+                    showNextMovie();
                 } else {
-                    addMessage(data.message || "Қате орын алды", 'bot-message');
+                    addMessage(data.message || "Кешіріңіз, фильм табылмады.", 'bot-message');
                 }
             } catch (error) {
-                console.error("Ошибка:", error);
+                console.error("Қате:", error);
                 addMessage("Серверге қосылу мүмкін емес.", 'bot-message');
             }
         }
-        
+
+        function showTypingIndicator() {
+            document.getElementById("typing-indicator").style.display = "flex";
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById("typing-indicator").style.display = "none";
+        }
+
+        function showNextMovie() {
+            if (currentMovieIndex >= movies.length) {
+                movies = [];
+                currentMovieIndex = 0;
+                addMessage("Тағы сұрағыңыз бар ма?", 'bot-message');
+                return;
+            }
+
+            const movie = movies[currentMovieIndex++];
+            const movieHtml = `
+                <div class="movie-card">
+                    <div class="movie-poster">
+                        <img src="${POSTER_BASE_URL}${movie.poster_path}" alt="${movie.title}" onerror="this.src='/static/no-poster.jpg'">
+                    </div>
+                    <div class="movie-info">
+                        <h3>${movie.title}</h3>
+                        <p>${movie.release_date ? movie.release_date.substring(0, 4) : 'Жыл белгісіз'}</p>
+                        <p>${movie.overview || 'Сипаттама жоқ'}</p>
+                        <a href="/movie/${movie.id}" class="movie-link">Толығырақ</a>
+                    </div>
+                </div>
+                <div class="movie-actions">
+                    ${currentMovieIndex < movies.length ?
+                        `<button onclick="showNextMovie()" class="next-movie-btn">Келесі фильм</button>` :
+                        `<button onclick="showNextMovie()" class="next-movie-btn">Жаңа сұрау</button>`}
+                </div>`;
+            
+            addHtmlMessage(movieHtml, 'bot-message');
+        }
+
         function addMessage(text, className) {
             const container = document.getElementById("chat-container");
             const msg = document.createElement("div");
             msg.className = `chat-message ${className}`;
-            msg.textContent = text;
+            msg.innerHTML = `
+                <div class="message-avatar">
+                    <i class="${className === 'bot-message' ? 'fas fa-robot' : 'fas fa-user'}"></i>
+                </div>
+                <div class="message-content">${text}</div>`;
             container.appendChild(msg);
             container.scrollTop = container.scrollHeight;
         }
-        </script>
-        
+
+        function addHtmlMessage(html, className) {
+            const container = document.getElementById("chat-container");
+            const msg = document.createElement("div");
+            msg.className = `chat-message ${className}`;
+            msg.innerHTML = html;
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function setupQuickReplies() {
+            const quickReplies = ["Романтика", "Комедия", "Хоррор", "Экшн"];
+            const container = document.getElementById("chat-container");
+            const quickReplyContainer = document.createElement("div");
+            quickReplyContainer.className = "quick-replies";
+            quickReplies.forEach(reply => {
+                const button = document.createElement("button");
+                button.className = "quick-reply";
+                button.textContent = reply;
+                button.onclick = () => {
+                    document.getElementById("user-input").value = reply;
+                    sendMessage();
+                };
+                quickReplyContainer.appendChild(button);
+            });
+            container.appendChild(quickReplyContainer);
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
 </body>
 </html>

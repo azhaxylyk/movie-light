@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"unicode"
 
@@ -18,12 +19,15 @@ var GenreKeywords = map[string][]int{
 	"роман":         {10749, 18}, // может быть и романом, и драмой
 
 	// Ужасы
-	"қорқыныш": {27},
-	"ужас":     {27},
-	"қорқақ":   {27},
+	"қорқыныш":   {27},
+	"қорқынышты": {27},
+	"ужас":       {27},
+	"қорқақ":     {27},
+	"хоррор":     {27},
 
 	// Приключения
 	"оқиға":       {12},
+	"оқиғалы":     {12},
 	"шытырман":    {12},
 	"приключение": {12},
 	"серіктестік": {12},
@@ -42,6 +46,7 @@ var GenreKeywords = map[string][]int{
 	"көңілді": {35},
 	"комедия": {35},
 	"күлімді": {35},
+	"күлкілі": {35},
 	"әзіл":    {35},
 	"сатира":  {35, 18}, // может быть и комедией, и драмой
 
@@ -81,38 +86,50 @@ var PopularGenres = []string{
 	"боевик", "драма", "қорқынышты", "мультфильм",
 }
 
-// DetectGenres определяет жанры с улучшенной обработкой
+// Улучшенная функция DetectGenres
 func DetectGenres(text string) ([]int, string) {
-	text = normalizeKazakhText(strings.ToLower(text))
+	// Сначала нормализуем текст (сохраняя пробелы)
+	normalizedText := normalizeKazakhText(strings.ToLower(text))
+	log.Printf("Нормализованный текст: '%s'", normalizedText)
+
 	detectedGenres := make(map[int]bool)
 	foundAny := false
 
-	// 1. Проверка точных совпадений
-	for keyword, genreIDs := range GenreKeywords {
-		if strings.Contains(text, keyword) {
+	// 1. Разбиваем на слова с учетом казахских особенностей
+	words := strings.Fields(normalizedText)
+
+	// 2. Проверяем каждое слово
+	for _, word := range words {
+		// Пробуем найти точное совпадение
+		if genreIDs, ok := GenreKeywords[word]; ok {
 			foundAny = true
 			for _, genreID := range genreIDs {
 				detectedGenres[genreID] = true
 			}
+			continue
 		}
-	}
 
-	// 2. Морфологический анализ и нечеткий поиск
-	if !foundAny {
-		words := strings.Fields(text)
-		for _, word := range words {
-			baseWord := removeKazakhSuffix(word)
+		// Если точного совпадения нет, пробуем удалить суффиксы
+		baseWord := removeKazakhSuffix(word)
+		if baseWord != word {
+			if genreIDs, ok := GenreKeywords[baseWord]; ok {
+				foundAny = true
+				for _, genreID := range genreIDs {
+					detectedGenres[genreID] = true
+				}
+				continue
+			}
+		}
 
+		// Нечеткий поиск для слов длиной > 3
+		if len(baseWord) > 3 {
 			for keyword, genreIDs := range GenreKeywords {
 				baseKeyword := removeKazakhSuffix(keyword)
-
-				// Проверяем похожесть слов
-				if len(baseWord) > 3 && len(baseKeyword) > 3 {
-					distance := levenshtein.ComputeDistance(baseWord, baseKeyword)
-					if distance <= 2 {
-						for _, genreID := range genreIDs {
-							detectedGenres[genreID] = true
-						}
+				distance := levenshtein.ComputeDistance(baseWord, baseKeyword)
+				if distance <= 2 {
+					foundAny = true
+					for _, genreID := range genreIDs {
+						detectedGenres[genreID] = true
 					}
 				}
 			}
@@ -125,9 +142,9 @@ func DetectGenres(text string) ([]int, string) {
 		result = append(result, genreID)
 	}
 
-	// Генерация подсказки, если ничего не найдено
+	// Генерация подсказки
 	var hint string
-	if len(result) == 0 {
+	if !foundAny {
 		hint = generateGenreHint()
 	}
 
@@ -143,11 +160,16 @@ func generateGenreHint() string {
 // Удаление казахских суффиксов
 func removeKazakhSuffix(word string) string {
 	suffixes := []string{
-		"тық", "тік", "қа", "ке", "тан", "тен",
-		"пен", "мен", "бен", "менен",
-		"дың", "дің", "ның", "нің",
-		"дар", "дер", "тар", "тер",
-		"ты", "ті", "лы", "лі",
+		"ты", "ті", "ды", "ді", "ны", "ні", // падежные окончания
+		"лық", "лік", "дық", "дік", "тық", "тік", // образует прилагательные
+		"шы", "ші", // профессии/характеристики
+		"да", "де", "та", "те", // местный падеж
+		"нан", "нен", "дан", "ден", // исходный падеж
+		"мен", "бен", "пен", // инструментальный падеж
+		"ша", "ше", // сравнительная степень
+		"ға", "ге", "қа", "ке", // направительный падеж
+		"ар", "ер", "йыр", // образует глаголы
+		"у", "ү", "ы", "і", // инфинитив
 	}
 
 	for _, s := range suffixes {
@@ -158,7 +180,7 @@ func removeKazakhSuffix(word string) string {
 	return word
 }
 
-// Нормализация казахского текста
+// Нормализация казахского текста с сохранением пробелов
 func normalizeKazakhText(text string) string {
 	var result strings.Builder
 	for _, r := range text {
@@ -181,6 +203,8 @@ func normalizeKazakhText(text string) string {
 			result.WriteString("х")
 		case 'і':
 			result.WriteString("и")
+		case ' ':
+			result.WriteRune(' ') // Сохраняем пробелы
 		default:
 			if unicode.IsLetter(r) || unicode.IsNumber(r) {
 				result.WriteRune(r)
@@ -188,27 +212,4 @@ func normalizeKazakhText(text string) string {
 		}
 	}
 	return result.String()
-}
-
-// ChatResponseByGenre получает фильмы по жанру и формирует текстовый ответ
-func ChatResponseByGenre(genreID int) (string, error) {
-	movies, err := GetGenreFilms([]int{genreID})
-	if err != nil {
-		return "", err
-	}
-
-	if len(movies) == 0 {
-		return "Бұл жанр бойынша фильмдер табылмады.", nil
-	}
-
-	// Сформируем краткий текст с предложениями фильмов
-	response := fmt.Sprintf("Ұсынылған жанр бойынша фильмдер:\n")
-	for i, movie := range movies {
-		if i >= 5 { // ограничим до 5 фильмов
-			break
-		}
-		response += fmt.Sprintf("- %s (%s)\n", movie.Title, movie.ReleaseDate)
-	}
-
-	return response, nil
 }

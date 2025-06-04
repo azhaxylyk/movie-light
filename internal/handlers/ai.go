@@ -10,10 +10,26 @@ import (
 
 // ChatBotPage отображает страницу чат-бота
 func ChatBotPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "ai.html", nil)
+	sessionToken, err := c.Cookie("session_token")
+	loggedIn := false
+	var username string
+
+	if err == nil && sessionToken != "" {
+		// Проверяем валидность токена
+		userID, usernameFromDB, err := models.GetIDBySessionToken(sessionToken)
+		if err == nil && userID != "" {
+			loggedIn = true
+			username = usernameFromDB
+		}
+	}
+
+	// Передаем данные в шаблон
+	c.HTML(http.StatusOK, "ai.html", gin.H{
+		"LoggedIn": loggedIn,
+		"Username": username,
+	})
 }
 
-// ChatBotHandler обрабатывает POST-запросы от чат-бота
 func ChatBotHandler(c *gin.Context) {
 	var request struct {
 		Query string `json:"query"`
@@ -40,32 +56,28 @@ func ChatBotHandler(c *gin.Context) {
 		return
 	}
 
-	if len(genreIDs) == 0 {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "Жанры не найдены. Попробуйте использовать другие ключевые слова.",
+	movies, err := models.GetGenreFilms(genreIDs)
+	if err != nil {
+		log.Printf("Ошибка при получении фильмов: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Қате орын алды. Кейінірек қайталап көріңіз.",
 		})
 		return
 	}
 
-	var responses []string
-
-	for _, genreID := range genreIDs {
-		resp, err := models.ChatResponseByGenre(genreID)
-		if err != nil {
-			log.Printf("Ошибка получения ответа по жанру %d: %v", genreID, err)
-			continue
-		}
-		responses = append(responses, resp)
-	}
-
-	if len(responses) == 0 {
+	if len(movies) == 0 {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Фильмы не найдены по указанным жанрам.",
+			"message": "Бұл жанрлар бойынша фильмдер табылмады.",
 		})
 		return
+	}
+
+	// Ограничиваем количество фильмов
+	if len(movies) > 5 {
+		movies = movies[:5]
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"results": responses,
+		"movies": movies,
 	})
 }
