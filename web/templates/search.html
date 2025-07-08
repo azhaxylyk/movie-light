@@ -89,7 +89,9 @@
                         <img src="https://image.tmdb.org/t/p/w200{{ .PosterPath }}" alt="{{ .Title }}" onerror="this.src='/static/no-image.jpg'">
                     </div>
                     <div class="result-details">
-                        <h3>{{ .Title }}</h3>
+                        <h3>
+                            <a href="/movie/{{ .ID }}">{{ .Title }}</a>
+                        </h3>
                         <div class="release-date">{{ .ReleaseDate }}</div>
                         <div class="overview">{{ .Overview }}</div>
                         <div class="rating">⭐ {{ .VoteAverage }} ({{ .VoteCount }} дауыс)</div>
